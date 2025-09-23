@@ -1,0 +1,115 @@
+{
+  "surfaceTypes": [
+    {
+      "id": "asphalt",
+      "name": "Asphalt/Concrete",
+      "description": "Paved surfaces, roads, parking lots",
+      "runoffCoefficient": {
+        "min": 0.85,
+        "max": 0.95,
+        "typical": 0.90
+      }
+    },
+    {
+      "id": "roof",
+      "name": "Roofs",
+      "description": "Building roofs, metal or tile",
+      "runoffCoefficient": {
+        "min": 0.75,
+        "max": 0.95,
+        "typical": 0.85
+      }
+    },
+    {
+      "id": "gravel",
+      "name": "Gravel",
+      "description": "Gravel roads, driveways",
+      "runoffCoefficient": {
+        "min": 0.25,
+        "max": 0.40,
+        "typical": 0.35
+      }
+    },
+    {
+      "id": "lawn",
+      "name": "Lawn/Grass",
+      "description": "Residential lawns, parks (flat)",
+      "runoffCoefficient": {
+        "min": 0.10,
+        "max": 0.25,
+        "typical": 0.20
+      }
+    },
+    {
+      "id": "lawn_steep",
+      "name": "Lawn/Grass (Steep)",
+      "description": "Residential lawns, parks (steep > 7%)",
+      "runoffCoefficient": {
+        "min": 0.15,
+        "max": 0.35,
+        "typical": 0.25
+      }
+    },
+    {
+      "id": "forest",
+      "name": "Forest",
+      "description": "Dense forest, woodland",
+      "runoffCoefficient": {
+        "min": 0.05,
+        "max": 0.20,
+        "typical": 0.10
+      }
+    },
+    {
+      "id": "bare_soil",
+      "name": "Bare Soil",
+      "description": "Exposed soil, construction sites",
+      "runoffCoefficient": {
+        "min": 0.20,
+        "max": 0.40,
+        "typical": 0.30
+      }
+    },
+    {
+      "id": "cultivated",
+      "name": "Cultivated Land",
+      "description": "Agricultural fields, row crops",
+      "runoffCoefficient": {
+        "min": 0.20,
+        "max": 0.50,
+        "typical": 0.35
+      }
+    },
+    {
+      "id": "pasture",
+      "name": "Pasture/Range",
+      "description": "Grazing land, natural grassland",
+      "runoffCoefficient": {
+        "min": 0.10,
+        "max": 0.30,
+        "typical": 0.20
+      }
+    },
+    {
+      "id": "desert",
+      "name": "Desert/Barren",
+      "description": "Desert, rocky terrain, barren land",
+      "runoffCoefficient": {
+        "min": 0.60,
+        "max": 0.80,
+        "typical": 0.70
+      }
+    }
+  ],
+  "notes": {
+    "source": "Based on standard hydrology references and engineering practice",
+    "application": "Use typical values for preliminary design. Consider site-specific conditions for final design.",
+    "factors": [
+      "Soil type and permeability",
+      "Slope and topography", 
+      "Land use and development",
+      "Seasonal variations",
+      "Antecedent moisture conditions"
+    ]
+  }
+}

@@ -1,0 +1,115 @@
+# Slope Drainage Design App - Cursor Rules
+
+## Code Quality Standards
+
+### TypeScript & Type Safety
+- Use strict TypeScript with no `any` types
+- Define explicit interfaces for all data structures
+- Use proper type annotations for function parameters and return values
+- Prefer type unions over enums where appropriate
+- Use const assertions for immutable data
+
+### Function Design
+- Keep functions pure and side-effect free when possible
+- Functions should be small (< 50 lines) and focused on single responsibility
+- Use descriptive function and variable names
+- Prefer composition over inheritance
+- Avoid deep nesting (max 3 levels)
+
+### Unit System
+- All internal calculations use SI units (meters, seconds, kg, etc.)
+- Explicit unit conversions at boundaries (UI ↔ calculations)
+- Document units in variable names and comments
+- Use consistent precision (3-6 decimal places for results)
+
+### Component Architecture
+- Keep React components under 150 lines
+- Extract complex logic to custom hooks or utility functions
+- Use proper prop typing with interfaces
+- Prefer controlled components over uncontrolled
+- Use proper key props for lists
+
+### Error Handling
+- Validate all inputs with meaningful error messages
+- Use try-catch blocks for async operations
+- Provide user-friendly error messages
+- Log errors for debugging but don't expose internals to users
+
+### Testing
+- Write unit tests for all utility functions
+- Test edge cases and error conditions
+- Use descriptive test names
+- Aim for >80% code coverage on core functions
+
+### Code Organization
+- Group related functionality in modules
+- Use barrel exports (index.ts) for clean imports
+- Keep business logic separate from UI components
+- Use consistent file naming (kebab-case for files, PascalCase for components)
+
+### Performance
+- Use React.memo for expensive components
+- Avoid unnecessary re-renders
+- Use useCallback and useMemo appropriately
+- Lazy load heavy components when possible
+
+### Accessibility
+- Use semantic HTML elements
+- Provide proper ARIA labels
+- Ensure keyboard navigation works
+- Use sufficient color contrast
+- Test with screen readers
+
+### Documentation
+- Document complex algorithms and formulas
+- Include unit information in comments
+- Provide JSDoc comments for public APIs
+- Keep README updated with setup instructions
+
+## Hydrology-Specific Rules
+
+### Calculations
+- Always validate physical constraints (positive areas, reasonable slopes)
+- Use appropriate numerical methods (bisection for root finding)
+- Handle edge cases (zero flow, very small channels)
+- Document formula sources and assumptions
+
+### Units
+- Convert all inputs to SI units immediately
+- Display results in appropriate units for users
+- Use consistent precision for different types of values
+- Round final results appropriately (3-4 significant figures)
+
+### Validation
+- Check that channel dimensions are physically reasonable
+- Validate runoff coefficients are in valid range (0-1)
+- Ensure slopes are positive and reasonable
+- Check that Manning's n values are realistic
+
+## Forbidden Patterns
+- No placeholder code or TODO comments in production
+- No hardcoded magic numbers without explanation
+- No direct DOM manipulation (use React patterns)
+- No mixing of unit systems in calculations
+- No unhandled promise rejections
+- No console.log statements in production code
+
+## File Structure
+```
+src/
+├── app/                    # Next.js app router pages
+│   ├── design/            # Design calculation pages
+│   │   ├── components/    # Form and UI components
+│   │   ├── hooks/         # Custom hooks for calculations
+│   │   └── utils/         # Utility functions
+├── components/            # Reusable UI components
+│   └── ui/               # shadcn/ui components
+└── lib/                  # Shared utilities
+```
+
+## Git & Deployment
+- Use conventional commit messages
+- Ensure all tests pass before committing
+- Keep build size optimized for Vercel deployment
+- Use environment variables for configuration
+- Document deployment process in README
