@@ -2,12 +2,16 @@
  * Manning's equation calculations for open channel flow
  */
 
-import { calculateTrapezoidGeometry } from "../utils/geometry";
+import { calculateTrapezoidGeometry, calculateUChannelGeometry } from "../utils/geometry";
 import { bisection, BisectionOptions } from "../utils/numeric";
 
 export interface ManningInputs {
-  bottomWidth: number;    // b in meters
-  sideSlope: number;      // z (H:V ratio)
+  shape: string;          // Channel shape: "trapezoid" or "u-shaped"
+  bottomWidth: number;    // b in meters (for trapezoidal)
+  sideSlope: number;      // z (H:V ratio) (for trapezoidal)
+  width: number;          // W in meters (for U-shaped)
+  radius: number;         // R in meters (for U-shaped)
+  flowDepth: number;      // y in meters (for U-shaped, user-specified)
   longitudinalSlope: number; // S (m/m)
   manningN: number;       // Manning's roughness coefficient
   targetFlow: number;     // Q in m³/s
@@ -24,7 +28,7 @@ export interface ManningResult {
 }
 
 /**
- * Calculate flow capacity using Manning's equation for trapezoidal channel
+ * Calculate flow capacity using Manning's equation for trapezoidal or U-shaped channel
  * Q = (1/n) * A * R^(2/3) * S^(1/2)
  * where:
  * - Q = flow (m³/s)
@@ -35,22 +39,18 @@ export interface ManningResult {
  */
 export function manningFlow(
   depth: number,
+  shape: string,
   bottomWidth: number,
   sideSlope: number,
+  width: number,
+  radius: number,
+  flowDepth: number,
   longitudinalSlope: number,
   manningN: number
 ): number {
   // Validate inputs
   if (depth < 0) {
     throw new Error("Depth must be non-negative");
-  }
-  
-  if (bottomWidth < 0) {
-    throw new Error("Bottom width must be non-negative");
-  }
-  
-  if (sideSlope < 0) {
-    throw new Error("Side slope must be non-negative");
   }
   
   if (longitudinalSlope < 0) {
@@ -61,8 +61,31 @@ export function manningFlow(
     throw new Error("Manning's n must be positive");
   }
 
-  // Calculate geometric properties
-  const geometry = calculateTrapezoidGeometry(depth, bottomWidth, sideSlope);
+  let geometry;
+  
+  if (shape === "trapezoid") {
+    if (bottomWidth < 0) {
+      throw new Error("Bottom width must be non-negative");
+    }
+    if (sideSlope < 0) {
+      throw new Error("Side slope must be non-negative");
+    }
+    geometry = calculateTrapezoidGeometry(depth, bottomWidth, sideSlope);
+  } else if (shape === "u-shaped") {
+    if (width < 0) {
+      throw new Error("Width must be non-negative");
+    }
+    if (radius < 0) {
+      throw new Error("Radius must be non-negative");
+    }
+    if (flowDepth < 0) {
+      throw new Error("Flow depth must be non-negative");
+    }
+    // For U-shaped channels, use the user-specified flow depth
+    geometry = calculateUChannelGeometry(flowDepth, width, radius);
+  } else {
+    throw new Error(`Unsupported channel shape: ${shape}`);
+  }
   
   // Manning's equation: Q = (1/n) * A * R^(2/3) * S^(1/2)
   const flow = (1 / manningN) * geometry.area * 
@@ -81,8 +104,12 @@ export function normalDepthAndCapacity(
   options: BisectionOptions = {}
 ): ManningResult {
   const {
+    shape,
     bottomWidth,
     sideSlope,
+    width,
+    radius,
+    flowDepth,
     longitudinalSlope,
     manningN,
     targetFlow,
@@ -102,47 +129,71 @@ export function normalDepthAndCapacity(
     ...options,
   };
 
-  // Define function to solve: f(y) = Q(y) - Qtarget
-  const flowDifference = (depth: number): number => {
-    try {
-      const calculatedFlow = manningFlow(
-        depth,
-        bottomWidth,
-        sideSlope,
-        longitudinalSlope,
-        manningN
-      );
-      return calculatedFlow - targetFlow;
-    } catch {
-      // Return large error for invalid depths
-      return 1e6;
-    }
-  };
+  let normalDepth: number;
+  let geometry: { area: number; perimeter: number; hydraulicRadius: number };
+  let calculatedFlow: number;
 
-  // Use bisection to find normal depth
-  const result = bisection(
-    flowDifference,
-    bisectionOptions.minBound!,
-    bisectionOptions.maxBound!,
-    bisectionOptions
-  );
+  if (shape === "trapezoid") {
+    // For trapezoidal channels, use bisection to find normal depth
+    const flowDifference = (depth: number): number => {
+      try {
+        const calculatedFlow = manningFlow(
+          depth,
+          shape,
+          bottomWidth,
+          sideSlope,
+          width,
+          radius,
+          flowDepth,
+          longitudinalSlope,
+          manningN
+        );
+        return calculatedFlow - targetFlow;
+      } catch {
+        // Return large error for invalid depths
+        return 1e6;
+      }
+    };
 
-  const normalDepth = result.root;
+    // Use bisection to find normal depth
+    const result = bisection(
+      flowDifference,
+      bisectionOptions.minBound!,
+      bisectionOptions.maxBound!,
+      bisectionOptions
+    );
 
-  // Calculate final geometric properties and flow
-  const geometry = calculateTrapezoidGeometry(
-    normalDepth,
-    bottomWidth,
-    sideSlope
-  );
-
-  const calculatedFlow = manningFlow(
-    normalDepth,
-    bottomWidth,
-    sideSlope,
-    longitudinalSlope,
-    manningN
-  );
+    normalDepth = result.root;
+    geometry = calculateTrapezoidGeometry(normalDepth, bottomWidth, sideSlope);
+    calculatedFlow = manningFlow(
+      normalDepth,
+      shape,
+      bottomWidth,
+      sideSlope,
+      width,
+      radius,
+      flowDepth,
+      longitudinalSlope,
+      manningN
+    );
+  } else if (shape === "u-shaped") {
+    // For U-shaped channels, use the user-specified flow depth
+    normalDepth = flowDepth;
+    geometry = calculateUChannelGeometry(flowDepth, width, radius);
+    calculatedFlow = manningFlow(
+      flowDepth,
+      shape,
+      bottomWidth,
+      sideSlope,
+      width,
+      radius,
+      flowDepth,
+      longitudinalSlope,
+      manningN
+    );
+  } else {
+    throw new Error(`Unsupported channel shape: ${shape}`);
+  }
 
   const velocity = calculatedFlow / geometry.area;
 

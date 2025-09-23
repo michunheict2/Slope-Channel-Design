@@ -8,8 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 export interface ChannelData {
   shape: string;
-  bottomWidth: number; // b in meters
-  sideSlope: number; // z (H:V ratio)
+  bottomWidth: number; // b in meters (for trapezoidal)
+  sideSlope: number; // z (H:V ratio) (for trapezoidal)
+  width: number; // W in meters (for U-shaped)
+  radius: number; // R in meters (for U-shaped)
+  flowDepth: number; // y in meters (for U-shaped, user-specified depth)
   longitudinalSlope: number; // S (m/m)
   manningN: number; // Manning's roughness coefficient
 }
@@ -21,7 +24,18 @@ interface ChannelFormProps {
 
 const CHANNEL_SHAPES = [
   { id: "trapezoid", name: "Trapezoidal" },
-  // Additional shapes will be added in future weeks
+  { id: "u-shaped", name: "U-shaped" },
+];
+
+const U_CHANNEL_SIZES = [
+  { size: 100, label: "100mm" },
+  { size: 150, label: "150mm" },
+  { size: 225, label: "225mm" },
+  { size: 300, label: "300mm" },
+  { size: 375, label: "375mm" },
+  { size: 450, label: "450mm" },
+  { size: 525, label: "525mm" },
+  { size: 600, label: "600mm" },
 ];
 
 const MANNING_COEFFICIENTS = [
@@ -38,6 +52,9 @@ const MANNING_COEFFICIENTS = [
 export default function ChannelForm({ data, onChange }: ChannelFormProps) {
   const [bottomWidth, setBottomWidth] = useState(data.bottomWidth.toString());
   const [sideSlope, setSideSlope] = useState(data.sideSlope.toString());
+  const [width, setWidth] = useState(data.width?.toString() || "0.3");
+  const [radius, setRadius] = useState(data.radius?.toString() || "0.15");
+  const [flowDepth, setFlowDepth] = useState(data.flowDepth?.toString() || "0.1");
   const [longitudinalSlope, setLongitudinalSlope] = useState(data.longitudinalSlope.toString());
   const [manningN, setManningN] = useState(data.manningN.toString());
 
@@ -69,6 +86,31 @@ export default function ChannelForm({ data, onChange }: ChannelFormProps) {
     onChange(newData);
   };
 
+
+  const handleRadiusChange = (value: string) => {
+    setRadius(value);
+    const numValue = parseFloat(value) || 0;
+    const newData = { ...data, radius: numValue };
+    onChange(newData);
+  };
+
+  const handleUChannelSizeSelect = (value: string) => {
+    const sizeMM = parseInt(value);
+    const sizeM = sizeMM / 1000; // Convert mm to m
+    setWidth(sizeM.toString());
+    const radiusValue = sizeM / 2;
+    setRadius(radiusValue.toString());
+    const newData = { ...data, width: sizeM, radius: radiusValue };
+    onChange(newData);
+  };
+
+  const handleFlowDepthChange = (value: string) => {
+    setFlowDepth(value);
+    const numValue = parseFloat(value) || 0;
+    const newData = { ...data, flowDepth: numValue };
+    onChange(newData);
+  };
+
   const handleManningNSelect = (value: string) => {
     const selected = MANNING_COEFFICIENTS.find(coeff => coeff.value.toString() === value);
     if (selected) {
@@ -86,7 +128,15 @@ export default function ChannelForm({ data, onChange }: ChannelFormProps) {
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="shape">Channel Shape</Label>
-          <Select value={data.shape} onValueChange={(value) => onChange({ ...data, shape: value })}>
+          <Select value={data.shape} onValueChange={(value) => {
+            const newData = { ...data, shape: value };
+            // If switching to U-shaped, automatically set radius to half width
+            if (value === "u-shaped") {
+              newData.radius = newData.width / 2;
+              setRadius(newData.radius.toString());
+            }
+            onChange(newData);
+          }}>
             <SelectTrigger>
               <SelectValue placeholder="Select channel shape" />
             </SelectTrigger>
@@ -103,37 +153,104 @@ export default function ChannelForm({ data, onChange }: ChannelFormProps) {
           </p>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="bottom-width">Bottom Width (m)</Label>
-          <Input
-            id="bottom-width"
-            type="number"
-            value={bottomWidth}
-            onChange={(e) => handleBottomWidthChange(e.target.value)}
-            placeholder="0.5"
-            min="0"
-            step="0.1"
-          />
-          <p className="text-sm text-muted-foreground">
-            Width of the channel bottom
-          </p>
-        </div>
+        {/* Trapezoidal Channel Parameters */}
+        {data.shape === "trapezoid" && (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="bottom-width">Bottom Width (m)</Label>
+              <Input
+                id="bottom-width"
+                type="number"
+                value={bottomWidth}
+                onChange={(e) => handleBottomWidthChange(e.target.value)}
+                placeholder="0.5"
+                min="0"
+                step="0.1"
+              />
+              <p className="text-sm text-muted-foreground">
+                Width of the channel bottom
+              </p>
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="side-slope">Side Slope (H:V)</Label>
-          <Input
-            id="side-slope"
-            type="number"
-            value={sideSlope}
-            onChange={(e) => handleSideSlopeChange(e.target.value)}
-            placeholder="1.5"
-            min="0"
-            step="0.1"
-          />
-          <p className="text-sm text-muted-foreground">
-            Horizontal to vertical ratio (e.g., 1.5 means 1.5H:1V)
-          </p>
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="side-slope">Side Slope (H:V)</Label>
+              <Input
+                id="side-slope"
+                type="number"
+                value={sideSlope}
+                onChange={(e) => handleSideSlopeChange(e.target.value)}
+                placeholder="1.5"
+                min="0"
+                step="0.1"
+              />
+              <p className="text-sm text-muted-foreground">
+                Horizontal to vertical ratio (e.g., 1.5 means 1.5H:1V)
+              </p>
+            </div>
+          </>
+        )}
+
+        {/* U-shaped Channel Parameters */}
+        {data.shape === "u-shaped" && (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="u-channel-size">U-Channel Size</Label>
+              <Select 
+                value={(parseFloat(width) * 1000).toString()} 
+                onValueChange={handleUChannelSizeSelect}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select U-channel size" />
+                </SelectTrigger>
+                <SelectContent>
+                  {U_CHANNEL_SIZES.map((size) => (
+                    <SelectItem key={size.size} value={size.size.toString()}>
+                      {size.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-muted-foreground">
+                Standard U-channel sizes (TGN 43 compliant: ≤ 600mm)
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="radius">Bottom Radius (m)</Label>
+              <Input
+                id="radius"
+                type="number"
+                value={radius}
+                onChange={(e) => handleRadiusChange(e.target.value)}
+                placeholder="0.3"
+                min="0"
+                step="0.01"
+                readOnly
+                className="bg-gray-50"
+              />
+              <p className="text-sm text-muted-foreground">
+                Automatically set to half the width (R = W/2)
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="flow-depth">Flow Depth (m)</Label>
+              <Input
+                id="flow-depth"
+                type="number"
+                value={flowDepth}
+                onChange={(e) => handleFlowDepthChange(e.target.value)}
+                placeholder="0.1"
+                min="0"
+                max="1.0"
+                step="0.01"
+              />
+              <p className="text-sm text-muted-foreground">
+                Water depth in the channel (user-specified)
+              </p>
+            </div>
+          </>
+        )}
 
         <div className="space-y-2">
           <Label htmlFor="longitudinal-slope">Longitudinal Slope (m/m)</Label>
@@ -183,12 +300,6 @@ export default function ChannelForm({ data, onChange }: ChannelFormProps) {
           </p>
         </div>
 
-        <div className="p-3 bg-blue-50 rounded-md">
-          <p className="text-sm text-blue-800">
-            <strong>Week 1:</strong> Only trapezoidal channels are supported.
-            Additional shapes (rectangular, triangular, circular) will be added in future weeks.
-          </p>
-        </div>
       </CardContent>
     </Card>
   );

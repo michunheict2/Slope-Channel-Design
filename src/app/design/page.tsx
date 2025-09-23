@@ -5,10 +5,11 @@ import CatchmentForm, { CatchmentData } from "./components/CatchmentForm";
 import RainfallForm, { RainfallData } from "./components/RainfallForm";
 import ChannelForm, { ChannelData } from "./components/ChannelForm";
 import ResultsPanel, { CalculationResults } from "./components/ResultsPanel";
+import DetailedCalculations from "./components/DetailedCalculations";
 import { rationalQ } from "./hooks/useRational";
 import { normalDepthAndCapacity } from "./hooks/useManning";
 
-// Default values for Week 1 example
+// Default values for example calculations
 const DEFAULT_CATCHMENT: CatchmentData = {
   area: 1000, // m²
   surfaceType: "asphalt",
@@ -25,6 +26,9 @@ const DEFAULT_CHANNEL: ChannelData = {
   shape: "trapezoid",
   bottomWidth: 0.5, // m
   sideSlope: 1.5, // H:V
+  width: 0.3, // m (for U-shaped, 300mm standard size)
+  radius: 0.15, // m (for U-shaped, automatically width/2)
+  flowDepth: 0.1, // m (for U-shaped, user-specified depth)
   longitudinalSlope: 0.01, // m/m
   manningN: 0.013,
 };
@@ -52,8 +56,12 @@ export default function DesignPage() {
 
       // Calculate channel capacity using Manning&apos;s equation
       const manningInputs = {
+        shape: channelData.shape,
         bottomWidth: channelData.bottomWidth,
         sideSlope: channelData.sideSlope,
+        width: channelData.width,
+        radius: channelData.radius,
+        flowDepth: channelData.flowDepth,
         longitudinalSlope: channelData.longitudinalSlope,
         manningN: channelData.manningN,
         targetFlow: peakFlow,
@@ -72,13 +80,31 @@ export default function DesignPage() {
         error = `Channel capacity (${manningResult.calculatedFlow.toFixed(3)} m³/s) is less than required peak flow (${peakFlow.toFixed(3)} m³/s)`;
       }
 
-      // Check velocity limits (typical range: 0.3 - 3.0 m/s)
-      if (manningResult.velocity < 0.3) {
-        status = "Not OK";
-        error = `Velocity too low (${manningResult.velocity.toFixed(2)} m/s). Minimum recommended: 0.3 m/s`;
-      } else if (manningResult.velocity > 3.0) {
-        status = "Not OK";
-        error = `Velocity too high (${manningResult.velocity.toFixed(2)} m/s). Maximum recommended: 3.0 m/s`;
+      // Check velocity limits based on channel type
+      if (channelData.shape === "u-shaped") {
+        // TGN 43: Maximum permissible velocity of 4 m/s for U-shaped channels
+        if (manningResult.velocity < 0.3) {
+          status = "Not OK";
+          error = `Velocity too low (${manningResult.velocity.toFixed(2)} m/s). Minimum recommended: 0.3 m/s`;
+        } else if (manningResult.velocity > 4.0) {
+          status = "Not OK";
+          error = `Velocity too high (${manningResult.velocity.toFixed(2)} m/s). Maximum permissible for U-shaped channels: 4.0 m/s (TGN 43)`;
+        }
+        
+        // TGN 43: U-shaped channels should be ≤ 600mm
+        if (channelData.width > 0.6) {
+          status = "Not OK";
+          error = `U-shaped channel width (${(channelData.width * 1000).toFixed(0)}mm) exceeds TGN 43 limit of 600mm`;
+        }
+      } else {
+        // Trapezoidal channels: typical range 0.3 - 3.0 m/s
+        if (manningResult.velocity < 0.3) {
+          status = "Not OK";
+          error = `Velocity too low (${manningResult.velocity.toFixed(2)} m/s). Minimum recommended: 0.3 m/s`;
+        } else if (manningResult.velocity > 3.0) {
+          status = "Not OK";
+          error = `Velocity too high (${manningResult.velocity.toFixed(2)} m/s). Maximum recommended: 3.0 m/s`;
+        }
       }
 
       const calculationResults: CalculationResults = {
@@ -153,20 +179,14 @@ export default function DesignPage() {
         </div>
       </div>
 
-      {/* Week 1 Information */}
-      <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-        <h3 className="font-semibold text-blue-900 mb-2">Week 1 Implementation</h3>
-        <ul className="text-sm text-blue-800 space-y-1">
-          <li>• Trapezoidal channel geometry calculations</li>
-          <li>• Rational Method for peak flow estimation</li>
-          <li>• Manning&apos;s equation with bisection solver</li>
-          <li>• Basic design validation (flow capacity, velocity limits)</li>
-          <li>• Single surface type runoff coefficient</li>
-        </ul>
-        <p className="text-sm text-blue-700 mt-2">
-          <strong>Next Week:</strong> IDF curves, multiple surface types, additional channel shapes, and advanced design features.
-        </p>
-      </div>
+      {/* Detailed Calculations */}
+      <DetailedCalculations
+        catchmentData={catchmentData}
+        rainfallData={rainfallData}
+        channelData={channelData}
+        results={results}
+      />
+
     </div>
   );
 }

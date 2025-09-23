@@ -62,13 +62,6 @@ export default function RainfallForm({ data, onChange }: RainfallFormProps) {
           </p>
         </div>
 
-        <div className="p-3 bg-blue-50 rounded-md">
-          <p className="text-sm text-blue-800">
-            <strong>Note:</strong> For Week 1, using a fixed design storm intensity.
-            In Week 2, this will be calculated from IDF curves based on catchment
-            characteristics and return period.
-          </p>
-        </div>
       </CardContent>
     </Card>
   );

@@ -42,10 +42,10 @@ export default function ResultsPanel({
     catchmentData.area > 0 &&
     catchmentData.runoffCoefficient > 0 &&
     rainfallData.intensity > 0 &&
-    channelData.bottomWidth > 0 &&
-    channelData.sideSlope >= 0 &&
     channelData.longitudinalSlope > 0 &&
-    channelData.manningN > 0;
+    channelData.manningN > 0 &&
+    ((channelData.shape === "trapezoid" && channelData.bottomWidth > 0 && channelData.sideSlope >= 0) ||
+     (channelData.shape === "u-shaped" && channelData.width > 0 && channelData.radius > 0 && channelData.flowDepth > 0));
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -108,6 +108,9 @@ export default function ResultsPanel({
                     <p className="text-xs text-blue-600">
                       {(results.peakFlow * 1000).toFixed(1)} L/s
                     </p>
+                    <p className="text-xs text-blue-600">
+                      {(results.peakFlow * 60000).toFixed(1)} L/min
+                    </p>
                   </div>
                 </div>
 
@@ -159,19 +162,13 @@ export default function ResultsPanel({
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Channel Capacity</p>
                     <p className="text-lg font-bold">{results.calculatedFlow.toFixed(3)} m³/s</p>
+                    <p className="text-sm text-muted-foreground">
+                      {(results.calculatedFlow * 60000).toFixed(1)} L/min
+                    </p>
                   </div>
                 </div>
               </div>
 
-              <Separator />
-
-              <div className="p-3 bg-blue-50 rounded-md">
-                <p className="text-sm text-blue-800">
-                  <strong>Week 1 Note:</strong> This is a simplified calculation using fixed example values.
-                  In Week 2, we&apos;ll implement proper IDF curve calculations and more sophisticated
-                  channel design methods.
-                </p>
-              </div>
             </div>
           </>
         )}

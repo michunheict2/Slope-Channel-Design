@@ -1,10 +1,15 @@
 /**
- * Geometric calculations for trapezoidal channels
+ * Geometric calculations for trapezoidal and U-shaped channels
  */
 
 export interface TrapezoidGeometry {
   bottomWidth: number; // b in meters
   sideSlope: number;   // z (H:V ratio)
+}
+
+export interface UChannelGeometry {
+  width: number;       // W in meters (total width)
+  radius: number;      // R in meters (radius of the curved bottom)
 }
 
 /**
@@ -83,6 +88,103 @@ export function calculateTrapezoidGeometry(
 } {
   const area = trapezoidArea(depth, bottomWidth, sideSlope);
   const perimeter = trapezoidPerimeter(depth, bottomWidth, sideSlope);
+  const hydraulicRadiusValue = hydraulicRadius(area, perimeter);
+  
+  return {
+    area,
+    perimeter,
+    hydraulicRadius: hydraulicRadiusValue,
+  };
+}
+
+/**
+ * Calculate cross-sectional area of U-shaped channel
+ * Based on TGN 43 guidelines for U-shaped channels
+ * A(y) = area of rectangle + area of semicircle (when y > radius)
+ * A(y) = area of circular segment (when y <= radius)
+ */
+export function uChannelArea(
+  depth: number,
+  width: number,
+  radius: number
+): number {
+  if (depth < 0) {
+    throw new Error("Depth must be non-negative");
+  }
+  if (width < 0) {
+    throw new Error("Width must be non-negative");
+  }
+  if (radius < 0) {
+    throw new Error("Radius must be non-negative");
+  }
+  
+  // For U-shaped channels, the radius should be half the width
+  // This ensures the channel has vertical sides and a semicircular bottom
+  const effectiveRadius = width / 2;
+  
+  if (depth <= effectiveRadius) {
+    // Water level is within the semicircular bottom
+    // Calculate area of circular segment
+    const theta = 2 * Math.acos(1 - depth / effectiveRadius);
+    const segmentArea = (effectiveRadius * effectiveRadius / 2) * (theta - Math.sin(theta));
+    return segmentArea;
+  } else {
+    // Water level extends above the semicircular bottom
+    // Area = semicircle + rectangle
+    const semicircleArea = (Math.PI * effectiveRadius * effectiveRadius) / 2;
+    const rectangleArea = (depth - effectiveRadius) * width;
+    return semicircleArea + rectangleArea;
+  }
+}
+
+/**
+ * Calculate wetted perimeter of U-shaped channel
+ * Based on TGN 43 guidelines
+ */
+export function uChannelPerimeter(
+  depth: number,
+  width: number,
+  radius: number
+): number {
+  if (depth < 0) {
+    throw new Error("Depth must be non-negative");
+  }
+  if (width < 0) {
+    throw new Error("Width must be non-negative");
+  }
+  if (radius < 0) {
+    throw new Error("Radius must be non-negative");
+  }
+  
+  const effectiveRadius = width / 2;
+  
+  if (depth <= effectiveRadius) {
+    // Water level is within the semicircular bottom
+    const theta = 2 * Math.acos(1 - depth / effectiveRadius);
+    return effectiveRadius * theta;
+  } else {
+    // Water level extends above the semicircular bottom
+    // Perimeter = semicircle + 2 vertical sides
+    const semicirclePerimeter = Math.PI * effectiveRadius;
+    const verticalSides = 2 * (depth - effectiveRadius);
+    return semicirclePerimeter + verticalSides;
+  }
+}
+
+/**
+ * Calculate all geometric properties for a U-shaped channel
+ */
+export function calculateUChannelGeometry(
+  depth: number,
+  width: number,
+  radius: number
+): {
+  area: number;
+  perimeter: number;
+  hydraulicRadius: number;
+} {
+  const area = uChannelArea(depth, width, radius);
+  const perimeter = uChannelPerimeter(depth, width, radius);
   const hydraulicRadiusValue = hydraulicRadius(area, perimeter);
   
   return {
