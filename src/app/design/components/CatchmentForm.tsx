@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,9 @@ export interface CatchmentData {
   surfaceType: string;
   runoffCoefficient: number;
   weightedRunoffCoefficient: number;
+  averageSlope: number; // H, in m per 100m
+  flowPathLength: number; // L, in meters
+  timeOfConcentration: number; // t_o, in minutes
 }
 
 interface CatchmentFormProps {
@@ -36,12 +39,35 @@ export default function CatchmentForm({ data, onChange }: CatchmentFormProps) {
   const [area, setArea] = useState(data.area.toString());
   const [surfaceType, setSurfaceType] = useState(data.surfaceType);
   const [runoffCoefficient, setRunoffCoefficient] = useState(data.runoffCoefficient.toString());
+  const [averageSlope, setAverageSlope] = useState(data.averageSlope.toString());
+  const [flowPathLength, setFlowPathLength] = useState(data.flowPathLength.toString());
+
+  // Calculate time of concentration when inputs change
+  useEffect(() => {
+    const A = parseFloat(area) || 0;
+    const H = parseFloat(averageSlope) || 0;
+    const L = parseFloat(flowPathLength) || 0;
+
+    let timeOfConcentration = 0;
+    
+    // Only calculate if all inputs are valid and positive
+    if (A > 0 && H > 0 && L > 0) {
+      // Formula: t_o = 0.14465 * L / (H^0.2 * A^0.1)
+      timeOfConcentration = (0.14465 * L) / (Math.pow(H, 0.2) * Math.pow(A, 0.1));
+    }
+
+    const newData = {
+      ...data,
+      area: A,
+      averageSlope: H,
+      flowPathLength: L,
+      timeOfConcentration
+    };
+    onChange(newData);
+  }, [area, averageSlope, flowPathLength]);
 
   const handleAreaChange = (value: string) => {
     setArea(value);
-    const numValue = parseFloat(value) || 0;
-    const newData = { ...data, area: numValue };
-    onChange(newData);
   };
 
   const handleSurfaceTypeChange = (value: string) => {
@@ -70,6 +96,14 @@ export default function CatchmentForm({ data, onChange }: CatchmentFormProps) {
     onChange(newData);
   };
 
+  const handleAverageSlopeChange = (value: string) => {
+    setAverageSlope(value);
+  };
+
+  const handleFlowPathLengthChange = (value: string) => {
+    setFlowPathLength(value);
+  };
+
   const selectedSurfaceType = SURFACE_TYPES.find(type => type.id === surfaceType);
 
   return (
@@ -79,7 +113,7 @@ export default function CatchmentForm({ data, onChange }: CatchmentFormProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="area">Catchment Area (m²)</Label>
+          <Label htmlFor="area">Catchment Area (A) - m²</Label>
           <Input
             id="area"
             type="number"
@@ -92,6 +126,41 @@ export default function CatchmentForm({ data, onChange }: CatchmentFormProps) {
           <p className="text-sm text-muted-foreground">
             Total drainage area in square meters
           </p>
+        </div>
+
+        {/* Time of Concentration Inputs */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="average-slope">Average Slope (H) - m per 100m</Label>
+            <Input
+              id="average-slope"
+              type="number"
+              value={averageSlope}
+              onChange={(e) => handleAverageSlopeChange(e.target.value)}
+              placeholder="5"
+              min="0"
+              step="0.1"
+            />
+            <p className="text-sm text-muted-foreground">
+              Average slope of the catchment
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="flow-path-length">Flow Path Length (L) - meters</Label>
+            <Input
+              id="flow-path-length"
+              type="number"
+              value={flowPathLength}
+              onChange={(e) => handleFlowPathLengthChange(e.target.value)}
+              placeholder="200"
+              min="0"
+              step="0.1"
+            />
+            <p className="text-sm text-muted-foreground">
+              Longest flow path to outlet
+            </p>
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -140,6 +209,30 @@ export default function CatchmentForm({ data, onChange }: CatchmentFormProps) {
           <p className="text-xs text-muted-foreground">
             For Week 1: Using single surface type coefficient
           </p>
+        </div>
+
+        {/* Time of Concentration Calculation */}
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="space-y-2">
+            <h4 className="text-sm font-semibold text-blue-900">
+              Time of Concentration Calculation
+            </h4>
+            <div className="text-sm text-blue-800">
+              <p className="mb-2">
+                <strong>Formula:</strong> t<sub>o</sub> = 0.14465 × L / (H<sup>0.2</sup> × A<sup>0.1</sup>)
+              </p>
+              <div className="bg-white p-3 rounded border">
+                <p className="text-lg font-bold text-blue-900">
+                  Time of Concentration: {data.timeOfConcentration > 0 ? data.timeOfConcentration.toFixed(2) : "—"} minutes
+                </p>
+                {data.timeOfConcentration > 0 && (
+                  <p className="text-sm text-blue-700 mt-1">
+                    ({data.timeOfConcentration.toFixed(2)} min = {(data.timeOfConcentration / 60).toFixed(2)} hours)
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>

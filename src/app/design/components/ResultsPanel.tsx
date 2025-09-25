@@ -150,13 +150,13 @@ export default function ResultsPanel({
                   <h4 className="font-medium text-sm">Peak Flow (Rational Method)</h4>
                   <div className="p-3 bg-blue-50 rounded-md">
                     <p className="text-lg font-bold text-blue-800">
-                      {results.peakFlow.toFixed(3)} m³/s
+                      {results.peakFlow?.toFixed(3) || "—"} m³/s
                     </p>
                     <p className="text-xs text-blue-600">
-                      {(results.peakFlow * 1000).toFixed(1)} L/s
+                      {results.peakFlow ? (results.peakFlow * 1000).toFixed(1) : "—"} L/s
                     </p>
                     <p className="text-xs text-blue-600">
-                      {(results.peakFlow * 60000).toFixed(1)} L/min
+                      {results.peakFlow ? (results.peakFlow * 60000).toFixed(1) : "—"} L/min
                     </p>
                     {rainfallData.useIDFCurve && rainfallData.idfResult && (
                       <p className="text-xs text-blue-600 mt-1">
@@ -188,34 +188,34 @@ export default function ResultsPanel({
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Normal Depth</p>
-                    <p className="text-lg font-bold">{results.normalDepth.toFixed(3)} m</p>
+                    <p className="text-lg font-bold">{results.normalDepth?.toFixed(3) || "—"} m</p>
                   </div>
                   
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Velocity</p>
-                    <p className="text-lg font-bold">{results.velocity.toFixed(2)} m/s</p>
+                    <p className="text-lg font-bold">{results.velocity?.toFixed(2) || "—"} m/s</p>
                   </div>
                   
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Cross-sectional Area</p>
-                    <p className="text-lg font-bold">{results.area.toFixed(2)} m²</p>
+                    <p className="text-lg font-bold">{results.area?.toFixed(2) || "—"} m²</p>
                   </div>
                   
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Wetted Perimeter</p>
-                    <p className="text-lg font-bold">{results.perimeter.toFixed(2)} m</p>
+                    <p className="text-lg font-bold">{results.perimeter?.toFixed(2) || "—"} m</p>
                   </div>
                   
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Hydraulic Radius</p>
-                    <p className="text-lg font-bold">{results.hydraulicRadius.toFixed(3)} m</p>
+                    <p className="text-lg font-bold">{results.hydraulicRadius?.toFixed(3) || "—"} m</p>
                   </div>
                   
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Channel Capacity</p>
-                    <p className="text-lg font-bold">{results.calculatedFlow.toFixed(3)} m³/s</p>
+                    <p className="text-lg font-bold">{results.calculatedFlow?.toFixed(3) || "—"} m³/s</p>
                     <p className="text-sm text-muted-foreground">
-                      {(results.calculatedFlow * 60000).toFixed(1)} L/min
+                      {results.calculatedFlow ? (results.calculatedFlow * 60000).toFixed(1) : "—"} L/min
                     </p>
                   </div>
                 </div>

@@ -15,6 +15,9 @@ const DEFAULT_CATCHMENT: CatchmentData = {
   surfaceType: "asphalt",
   runoffCoefficient: 0.9,
   weightedRunoffCoefficient: 0.9,
+  averageSlope: 5, // m per 100m
+  flowPathLength: 200, // meters
+  timeOfConcentration: 0, // Will be calculated
 };
 
 const DEFAULT_RAINFALL: RainfallData = {
