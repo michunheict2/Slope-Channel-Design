@@ -99,6 +99,16 @@
         "max": 0.80,
         "typical": 0.70
       }
+    },
+    {
+      "id": "undrain",
+      "name": "Undrain",
+      "description": "Undrained surfaces, impervious areas",
+      "runoffCoefficient": {
+        "min": 1.00,
+        "max": 1.00,
+        "typical": 1.00
+      }
     }
   ],
   "notes": {

@@ -98,6 +98,53 @@ export default function ResultsPanel({
             <Separator />
             
             <div className="space-y-4">
+              {/* IDF Calculation Details */}
+              {rainfallData.useIDFCurve && rainfallData.idfResult && (
+                <div className="space-y-3">
+                  <h4 className="font-medium text-sm">IDF Curve Calculation Details</h4>
+                  <div className="p-3 bg-green-50 rounded-md space-y-2">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <p className="font-medium">Return Period</p>
+                        <p>{rainfallData.idfResult.returnPeriod} years</p>
+                      </div>
+                      <div>
+                        <p className="font-medium">Duration</p>
+                        <p>{rainfallData.idfResult.duration} min</p>
+                      </div>
+                      <div>
+                        <p className="font-medium">Raw Intensity</p>
+                        <p>{rainfallData.idfResult.rawIntensity.toFixed(2)} mm/hr</p>
+                      </div>
+                      <div>
+                        <p className="font-medium">Final Intensity</p>
+                        <p className="font-bold">{rainfallData.idfResult.intensity.toFixed(2)} mm/hr</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <p className="font-medium">Constants (a, b, c)</p>
+                        <p>{rainfallData.idfResult.constants.a}, {rainfallData.idfResult.constants.b}, {rainfallData.idfResult.constants.c}</p>
+                      </div>
+                      <div>
+                        <p className="font-medium">Climate Change</p>
+                        <p>{rainfallData.idfResult.climateChangeApplied ? "Applied (+28.1%)" : "Not applied"}</p>
+                      </div>
+                      <div>
+                        <p className="font-medium">SI Value</p>
+                        <p>{rainfallData.idfResult.intensitySI.toExponential(6)} m/s</p>
+                      </div>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      <p>Formula: {rainfallData.idfResult.formula}</p>
+                      {rainfallData.idfResult.temporaryDesign && (
+                        <p className="text-orange-600">Temporary drainage design - climate change adjustment excluded</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">Peak Flow (Rational Method)</h4>
@@ -111,6 +158,11 @@ export default function ResultsPanel({
                     <p className="text-xs text-blue-600">
                       {(results.peakFlow * 60000).toFixed(1)} L/min
                     </p>
+                    {rainfallData.useIDFCurve && rainfallData.idfResult && (
+                      <p className="text-xs text-blue-600 mt-1">
+                        Using IDF curve (RP: {rainfallData.idfResult.returnPeriod} years, Duration: {rainfallData.idfResult.duration} min)
+                      </p>
+                    )}
                   </div>
                 </div>
 

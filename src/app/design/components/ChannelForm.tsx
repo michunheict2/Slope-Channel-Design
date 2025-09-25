@@ -10,6 +10,8 @@ export interface ChannelData {
   shape: string;
   bottomWidth: number; // b in meters (for trapezoidal)
   sideSlope: number; // z (H:V ratio) (for trapezoidal)
+  channelDepth: number; // y in meters (for trapezoidal, user-specified depth)
+  topWidth: number; // T in meters (for trapezoidal, auto-calculated)
   width: number; // W in meters (for U-shaped)
   radius: number; // R in meters (for U-shaped)
   flowDepth: number; // y in meters (for U-shaped, user-specified depth)
@@ -52,23 +54,64 @@ const MANNING_COEFFICIENTS = [
 export default function ChannelForm({ data, onChange }: ChannelFormProps) {
   const [bottomWidth, setBottomWidth] = useState(data.bottomWidth.toString());
   const [sideSlope, setSideSlope] = useState(data.sideSlope.toString());
+  const [channelDepth, setChannelDepth] = useState(data.channelDepth?.toString() || "0.5");
+  const [topWidth, setTopWidth] = useState(data.topWidth?.toString() || "0");
   const [width, setWidth] = useState(data.width?.toString() || "0.3");
   const [radius, setRadius] = useState(data.radius?.toString() || "0.15");
   const [flowDepth, setFlowDepth] = useState(data.flowDepth?.toString() || "0.1");
   const [longitudinalSlope, setLongitudinalSlope] = useState(data.longitudinalSlope.toString());
   const [manningN, setManningN] = useState(data.manningN.toString());
 
+  // Calculate top width for trapezoidal channel: T = b + 2zy
+  const calculateTopWidth = (bottomWidth: number, sideSlope: number, depth: number): number => {
+    return bottomWidth + 2 * sideSlope * depth;
+  };
+
   const handleBottomWidthChange = (value: string) => {
     setBottomWidth(value);
     const numValue = parseFloat(value) || 0;
-    const newData = { ...data, bottomWidth: numValue };
+    const currentDepth = parseFloat(channelDepth) || 0;
+    const currentSideSlope = parseFloat(sideSlope) || 0;
+    const calculatedTopWidth = calculateTopWidth(numValue, currentSideSlope, currentDepth);
+    setTopWidth(calculatedTopWidth.toString());
+    
+    const newData = { 
+      ...data, 
+      bottomWidth: numValue,
+      topWidth: calculatedTopWidth
+    };
     onChange(newData);
   };
 
   const handleSideSlopeChange = (value: string) => {
     setSideSlope(value);
     const numValue = parseFloat(value) || 0;
-    const newData = { ...data, sideSlope: numValue };
+    const currentBottomWidth = parseFloat(bottomWidth) || 0;
+    const currentDepth = parseFloat(channelDepth) || 0;
+    const calculatedTopWidth = calculateTopWidth(currentBottomWidth, numValue, currentDepth);
+    setTopWidth(calculatedTopWidth.toString());
+    
+    const newData = { 
+      ...data, 
+      sideSlope: numValue,
+      topWidth: calculatedTopWidth
+    };
+    onChange(newData);
+  };
+
+  const handleChannelDepthChange = (value: string) => {
+    setChannelDepth(value);
+    const numValue = parseFloat(value) || 0;
+    const currentBottomWidth = parseFloat(bottomWidth) || 0;
+    const currentSideSlope = parseFloat(sideSlope) || 0;
+    const calculatedTopWidth = calculateTopWidth(currentBottomWidth, currentSideSlope, numValue);
+    setTopWidth(calculatedTopWidth.toString());
+    
+    const newData = { 
+      ...data, 
+      channelDepth: numValue,
+      topWidth: calculatedTopWidth
+    };
     onChange(newData);
   };
 
@@ -185,6 +228,39 @@ export default function ChannelForm({ data, onChange }: ChannelFormProps) {
               />
               <p className="text-sm text-muted-foreground">
                 Horizontal to vertical ratio (e.g., 1.5 means 1.5H:1V)
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="channel-depth">Channel Depth (m)</Label>
+              <Input
+                id="channel-depth"
+                type="number"
+                value={channelDepth}
+                onChange={(e) => handleChannelDepthChange(e.target.value)}
+                placeholder="0.5"
+                min="0"
+                step="0.1"
+              />
+              <p className="text-sm text-muted-foreground">
+                Total depth of the channel
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="top-width">Top Width (m)</Label>
+              <Input
+                id="top-width"
+                type="number"
+                value={topWidth}
+                readOnly
+                className="bg-gray-50"
+              />
+              <p className="text-sm text-muted-foreground">
+                Automatically calculated: T = b + 2zy
+              </p>
+              <p className="text-xs text-blue-600">
+                Formula: Top Width = Bottom Width + (2 × Side Slope × Depth)
               </p>
             </div>
           </>

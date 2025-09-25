@@ -106,16 +106,19 @@ export default function DetailedCalculations({
                   <div className="bg-white p-3 rounded border-l-4 border-orange-500 space-y-2">
                     <div>
                       <p className="text-sm font-mono text-orange-800">
-                        <strong>Cross-sectional Area:</strong> A = y × (b + z×y)
+                        <strong>Cross-sectional Area:</strong> A = ½ × (T + b) × y
                       </p>
                       <p className="text-sm font-mono text-orange-800 ml-4">
-                        A = {results.normalDepth.toFixed(3)} × ({channelData.bottomWidth.toFixed(2)} + {channelData.sideSlope.toFixed(2)} × {results.normalDepth.toFixed(3)})
+                        <strong>Top Width:</strong> T = b + 2zy = {channelData.bottomWidth.toFixed(2)} + 2 × {channelData.sideSlope.toFixed(2)} × {results.normalDepth.toFixed(3)}
                       </p>
                       <p className="text-sm font-mono text-orange-800 ml-4">
-                        A = {results.normalDepth.toFixed(3)} × ({channelData.bottomWidth.toFixed(2)} + {(channelData.sideSlope * results.normalDepth).toFixed(3)})
+                        T = {channelData.bottomWidth.toFixed(2)} + {(2 * channelData.sideSlope * results.normalDepth).toFixed(3)} = {(channelData.bottomWidth + 2 * channelData.sideSlope * results.normalDepth).toFixed(3)} m
                       </p>
                       <p className="text-sm font-mono text-orange-800 ml-4">
-                        A = {results.normalDepth.toFixed(3)} × {(channelData.bottomWidth + channelData.sideSlope * results.normalDepth).toFixed(3)}
+                        <strong>Area:</strong> A = ½ × ({(channelData.bottomWidth + 2 * channelData.sideSlope * results.normalDepth).toFixed(3)} + {channelData.bottomWidth.toFixed(2)}) × {results.normalDepth.toFixed(3)}
+                      </p>
+                      <p className="text-sm font-mono text-orange-800 ml-4">
+                        A = ½ × {(channelData.bottomWidth + 2 * channelData.sideSlope * results.normalDepth + channelData.bottomWidth).toFixed(3)} × {results.normalDepth.toFixed(3)}
                       </p>
                       <p className="text-sm font-mono text-orange-800 ml-4 font-bold">
                         A = {results.area.toFixed(3)} m²

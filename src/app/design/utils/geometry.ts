@@ -14,8 +14,9 @@ export interface UChannelGeometry {
 
 /**
  * Calculate cross-sectional area of trapezoidal channel
- * A(y) = y * (b + z*y)
- * where: y = depth, b = bottom width, z = side slope (H:V)
+ * A = 1/2 × (top_width + bottom_width) × height
+ * where: top_width = b + 2*z*y, bottom_width = b, height = y
+ *       y = depth, b = bottom width, z = side slope (H:V)
  */
 export function trapezoidArea(
   depth: number,
@@ -32,7 +33,8 @@ export function trapezoidArea(
     throw new Error("Side slope must be non-negative");
   }
   
-  return depth * (bottomWidth + sideSlope * depth);
+  const topWidth = bottomWidth + 2 * sideSlope * depth;
+  return 0.5 * (topWidth + bottomWidth) * depth;
 }
 
 /**

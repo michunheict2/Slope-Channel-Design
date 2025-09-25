@@ -9,6 +9,8 @@ export interface ManningInputs {
   shape: string;          // Channel shape: "trapezoid" or "u-shaped"
   bottomWidth: number;    // b in meters (for trapezoidal)
   sideSlope: number;      // z (H:V ratio) (for trapezoidal)
+  channelDepth: number;   // y in meters (for trapezoidal, user-specified depth)
+  topWidth: number;       // T in meters (for trapezoidal, auto-calculated)
   width: number;          // W in meters (for U-shaped)
   radius: number;         // R in meters (for U-shaped)
   flowDepth: number;      // y in meters (for U-shaped, user-specified)
@@ -107,6 +109,8 @@ export function normalDepthAndCapacity(
     shape,
     bottomWidth,
     sideSlope,
+    channelDepth,
+    topWidth,
     width,
     radius,
     flowDepth,
@@ -134,39 +138,11 @@ export function normalDepthAndCapacity(
   let calculatedFlow: number;
 
   if (shape === "trapezoid") {
-    // For trapezoidal channels, use bisection to find normal depth
-    const flowDifference = (depth: number): number => {
-      try {
-        const calculatedFlow = manningFlow(
-          depth,
-          shape,
-          bottomWidth,
-          sideSlope,
-          width,
-          radius,
-          flowDepth,
-          longitudinalSlope,
-          manningN
-        );
-        return calculatedFlow - targetFlow;
-      } catch {
-        // Return large error for invalid depths
-        return 1e6;
-      }
-    };
-
-    // Use bisection to find normal depth
-    const result = bisection(
-      flowDifference,
-      bisectionOptions.minBound!,
-      bisectionOptions.maxBound!,
-      bisectionOptions
-    );
-
-    normalDepth = result.root;
-    geometry = calculateTrapezoidGeometry(normalDepth, bottomWidth, sideSlope);
+    // For trapezoidal channels, use the user-specified channel depth
+    normalDepth = channelDepth;
+    geometry = calculateTrapezoidGeometry(channelDepth, bottomWidth, sideSlope);
     calculatedFlow = manningFlow(
-      normalDepth,
+      channelDepth,
       shape,
       bottomWidth,
       sideSlope,

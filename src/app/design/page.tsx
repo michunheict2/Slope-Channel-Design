@@ -59,6 +59,8 @@ export default function DesignPage() {
         shape: channelData.shape,
         bottomWidth: channelData.bottomWidth,
         sideSlope: channelData.sideSlope,
+        channelDepth: channelData.channelDepth,
+        topWidth: channelData.topWidth,
         width: channelData.width,
         radius: channelData.radius,
         flowDepth: channelData.flowDepth,

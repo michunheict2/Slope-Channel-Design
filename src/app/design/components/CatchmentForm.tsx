@@ -29,6 +29,7 @@ const SURFACE_TYPES = [
   { id: "cultivated", name: "Cultivated Land", coefficient: 0.35 },
   { id: "pasture", name: "Pasture/Range", coefficient: 0.20 },
   { id: "desert", name: "Desert/Barren", coefficient: 0.70 },
+  { id: "undrain", name: "Undrain", coefficient: 1.00 },
 ];
 
 export default function CatchmentForm({ data, onChange }: CatchmentFormProps) {
