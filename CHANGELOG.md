@@ -75,3 +75,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 *For detailed commit history, see: [GitHub Commits](https://github.com/michunheict2/Slope-Channel-Design/commits/main)*
+

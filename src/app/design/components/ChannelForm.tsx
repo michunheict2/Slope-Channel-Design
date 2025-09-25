@@ -33,6 +33,7 @@ const U_CHANNEL_SIZES = [
   { size: 100, label: "100mm" },
   { size: 150, label: "150mm" },
   { size: 225, label: "225mm" },
+  { size: 250, label: "250mm" },
   { size: 300, label: "300mm" },
   { size: 375, label: "375mm" },
   { size: 450, label: "450mm" },
@@ -59,7 +60,10 @@ export default function ChannelForm({ data, onChange }: ChannelFormProps) {
   const [width, setWidth] = useState(data.width?.toString() || "0.3");
   const [radius, setRadius] = useState(data.radius?.toString() || "0.15");
   const [flowDepth, setFlowDepth] = useState(data.flowDepth?.toString() || "0.1");
+  const [flowDepthMM, setFlowDepthMM] = useState(((data.flowDepth || 0.1) * 1000).toString());
   const [longitudinalSlope, setLongitudinalSlope] = useState(data.longitudinalSlope.toString());
+  const [gradientInputType, setGradientInputType] = useState<'ratio' | 'oneInX'>('ratio');
+  const [gradientOneInX, setGradientOneInX] = useState((1 / data.longitudinalSlope).toString());
   const [manningN, setManningN] = useState(data.manningN.toString());
 
   // Calculate top width for trapezoidal channel: T = b + 2zy
@@ -122,6 +126,24 @@ export default function ChannelForm({ data, onChange }: ChannelFormProps) {
     onChange(newData);
   };
 
+  const handleGradientOneInXChange = (value: string) => {
+    setGradientOneInX(value);
+    const numValue = parseFloat(value) || 0;
+    const slopeValue = numValue > 0 ? 1 / numValue : 0;
+    setLongitudinalSlope(slopeValue.toString());
+    const newData = { ...data, longitudinalSlope: slopeValue };
+    onChange(newData);
+  };
+
+  const handleGradientInputTypeChange = (type: 'ratio' | 'oneInX') => {
+    setGradientInputType(type);
+    if (type === 'oneInX') {
+      const currentSlope = parseFloat(longitudinalSlope) || 0;
+      const oneInXValue = currentSlope > 0 ? 1 / currentSlope : 0;
+      setGradientOneInX(oneInXValue.toString());
+    }
+  };
+
   const handleManningNChange = (value: string) => {
     setManningN(value);
     const numValue = parseFloat(value) || 0.013;
@@ -148,9 +170,11 @@ export default function ChannelForm({ data, onChange }: ChannelFormProps) {
   };
 
   const handleFlowDepthChange = (value: string) => {
-    setFlowDepth(value);
+    setFlowDepthMM(value);
     const numValue = parseFloat(value) || 0;
-    const newData = { ...data, flowDepth: numValue };
+    const flowDepthM = numValue / 1000; // Convert mm to m
+    setFlowDepth(flowDepthM.toString());
+    const newData = { ...data, flowDepth: flowDepthM };
     onChange(newData);
   };
 
@@ -310,16 +334,16 @@ export default function ChannelForm({ data, onChange }: ChannelFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="flow-depth">Flow Depth (m)</Label>
+              <Label htmlFor="flow-depth">Flow Depth (mm)</Label>
               <Input
                 id="flow-depth"
                 type="number"
-                value={flowDepth}
+                value={flowDepthMM}
                 onChange={(e) => handleFlowDepthChange(e.target.value)}
-                placeholder="0.1"
+                placeholder="100"
                 min="0"
-                max="1.0"
-                step="0.01"
+                max="1000"
+                step="1"
               />
               <p className="text-sm text-muted-foreground">
                 Water depth in the channel (user-specified)
@@ -329,18 +353,65 @@ export default function ChannelForm({ data, onChange }: ChannelFormProps) {
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="longitudinal-slope">Longitudinal Slope (m/m)</Label>
-          <Input
-            id="longitudinal-slope"
-            type="number"
-            value={longitudinalSlope}
-            onChange={(e) => handleLongitudinalSlopeChange(e.target.value)}
-            placeholder="0.01"
-            min="0"
-            step="0.001"
-          />
+          <Label htmlFor="longitudinal-slope">Channel Gradient</Label>
+          
+          {/* Input Type Toggle */}
+          <div className="flex gap-4 mb-2">
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                name="gradientType"
+                value="ratio"
+                checked={gradientInputType === 'ratio'}
+                onChange={() => handleGradientInputTypeChange('ratio')}
+                className="rounded"
+              />
+              <span className="text-sm">Ratio (m/m)</span>
+            </label>
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                name="gradientType"
+                value="oneInX"
+                checked={gradientInputType === 'oneInX'}
+                onChange={() => handleGradientInputTypeChange('oneInX')}
+                className="rounded"
+              />
+              <span className="text-sm">1 in X</span>
+            </label>
+          </div>
+
+          {/* Input Field */}
+          {gradientInputType === 'ratio' ? (
+            <Input
+              id="longitudinal-slope"
+              type="number"
+              value={longitudinalSlope}
+              onChange={(e) => handleLongitudinalSlopeChange(e.target.value)}
+              placeholder="0.01"
+              min="0"
+              step="0.001"
+            />
+          ) : (
+            <div className="flex items-center space-x-2">
+              <span className="text-sm">1 in</span>
+              <Input
+                type="number"
+                value={gradientOneInX}
+                onChange={(e) => handleGradientOneInXChange(e.target.value)}
+                placeholder="100"
+                min="0"
+                step="0.1"
+                className="w-24"
+              />
+            </div>
+          )}
+          
           <p className="text-sm text-muted-foreground">
-            Channel slope in the flow direction (e.g., 0.01 = 1%)
+            {gradientInputType === 'ratio' 
+              ? 'Channel slope in the flow direction (e.g., 0.01 = 1%)'
+              : 'Channel gradient as 1 in X (e.g., 1 in 100 = 1% gradient)'
+            }
           </p>
         </div>
 

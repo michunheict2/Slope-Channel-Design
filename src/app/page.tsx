@@ -55,42 +55,6 @@ export default function Home() {
           </Card>
         </div>
 
-        {/* Week 1 Status */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Week 1 Implementation Status</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-semibold text-green-600 mb-2">✓ Completed Features</h4>
-                  <ul className="text-sm space-y-1">
-                    <li>• Next.js 15 with TypeScript and App Router</li>
-                    <li>• Tailwind CSS and shadcn/ui components</li>
-                    <li>• Trapezoidal channel geometry calculations</li>
-                    <li>• Rational Method implementation</li>
-                    <li>• Manning&apos;s equation with bisection solver</li>
-                    <li>• Unit conversion utilities</li>
-                    <li>• Form validation and error handling</li>
-                    <li>• Responsive design</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-blue-600 mb-2">🔄 Week 2 Planned</h4>
-                  <ul className="text-sm space-y-1">
-                    <li>• IDF curve calculations</li>
-                    <li>• Multiple surface type support</li>
-                    <li>• Additional channel shapes</li>
-                    <li>• Advanced design validation</li>
-                    <li>• Export and reporting features</li>
-                    <li>• Design optimization</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Technical Details */}
         <Card>

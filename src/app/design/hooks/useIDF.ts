@@ -40,7 +40,7 @@ export const loadIDFConstants = async (): Promise<IDFConstants[]> => {
     }
     const data = await response.json();
     idfConstantsCache = data.idf_constants;
-    return idfConstantsCache;
+    return idfConstantsCache || [];
   } catch (error) {
     console.error('Error loading IDF constants:', error);
     throw error;

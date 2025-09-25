@@ -387,12 +387,12 @@ export default function DetailedCalculations({
                   ) : (
                     <>
                       <li>• Min. Recommended = 0.3 m/s</li>
-                      <li>• Max. Recommended = 3.0 m/s</li>
+                      <li>• Max. Recommended = 4.0 m/s</li>
                     </>
                   )}
                   <li>• Status: {
                     results.velocity >= 0.3 && 
-                    (channelData.shape === "u-shaped" ? results.velocity <= 4.0 : results.velocity <= 3.0)
+                    (channelData.shape === "u-shaped" ? results.velocity <= 4.0 : results.velocity <= 4.0)
                       ? "✓ Acceptable" : "✗ Outside Range"
                   }</li>
                 </ul>

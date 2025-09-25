@@ -163,3 +163,4 @@ git tag -l
 - Breaking changes should be clearly documented
 - Tags are automatically created for releases
 - CHANGELOG.md serves as the primary release notes
+

@@ -134,3 +134,4 @@ Options:
   --category   Category for new entry: Added, Changed, Fixed, Removed
   `);
 }
+
