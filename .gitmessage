@@ -1,0 +1,25 @@
+# <type>: <subject>
+#
+# <body>
+#
+# <footer>
+
+# Type should be one of the following:
+# * feat: A new feature
+# * fix: A bug fix
+# * docs: Documentation only changes
+# * style: Changes that do not affect the meaning of the code
+# * refactor: A code change that neither fixes a bug nor adds a feature
+# * perf: A code change that improves performance
+# * test: Adding missing tests or correcting existing tests
+# * chore: Changes to the build process or auxiliary tools
+
+# Subject should be 50 characters or less and describe what changed
+# Body should wrap at 72 characters and explain why and how
+# Footer should contain any breaking changes or issue references
+
+# Examples:
+# feat: add Hong Kong IDF curves support
+# fix: correct trapezoid area calculation formula
+# docs: update README with new features
+# test: add comprehensive test coverage for IDF calculations
