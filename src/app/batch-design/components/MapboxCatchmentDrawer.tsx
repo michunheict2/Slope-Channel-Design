@@ -383,7 +383,7 @@ export default function MapboxCatchmentDrawer({
 
     try {
       // Get all current features from the map
-      const currentFeatures = draw.current.getAll();
+      const currentFeatures = (draw.current as any).getAll();
       
       // Find features that need to be removed (exist on map but not in catchments)
       const featuresToRemove = currentFeatures.features.filter((feature: unknown) => {
@@ -1203,7 +1203,7 @@ export default function MapboxCatchmentDrawer({
 
   const clearCatchments = () => {
     if (draw.current) {
-      const features = draw.current.getAll();
+      const features = (draw.current as any).getAll();
       features.features.forEach((feature: unknown) => {
         if (feature.geometry.type === 'Polygon') {
           draw.current.delete(feature.id);
@@ -1221,7 +1221,7 @@ export default function MapboxCatchmentDrawer({
 
   const clearChannels = () => {
     if (draw.current) {
-      const features = draw.current.getAll();
+      const features = (draw.current as any).getAll();
       features.features.forEach((feature: unknown) => {
         if (feature.geometry.type === 'LineString') {
           draw.current.delete(feature.id);
