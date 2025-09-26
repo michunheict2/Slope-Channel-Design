@@ -89,10 +89,10 @@ export default function MapboxCatchmentDrawer({
         }
 
         // Set Mapbox access token
-        mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+        (mapboxgl as any).accessToken = MAPBOX_ACCESS_TOKEN;
 
         // Initialize map with 3D terrain
-        map.current = new mapboxgl.Map({
+        map.current = new (mapboxgl as any).Map({
           container: mapContainer.current,
           style: 'mapbox://styles/mapbox/satellite-streets-v12', // Satellite view with streets
           center: [114.1694, 22.3193], // Hong Kong coordinates
@@ -130,7 +130,7 @@ export default function MapboxCatchmentDrawer({
             });
 
             // Initialize Mapbox Draw
-            draw.current = new MapboxDraw({
+            draw.current = new (MapboxDraw as any)({
               displayControlsDefault: false,
               controls: {
                 polygon: true,
@@ -404,7 +404,7 @@ export default function MapboxCatchmentDrawer({
         processLineFeature(feature);
       }
     }
-  }, [onCatchmentAdded, onChannelAdded]);
+  }, [onCatchmentAdded, onChannelAdded, processPolygonFeature, processLineFeature]);
 
   // Handle feature updates
   const handleDrawUpdate = useCallback(async (e: unknown) => {
@@ -416,7 +416,7 @@ export default function MapboxCatchmentDrawer({
         processLineFeature(feature);
       }
     }
-  }, [onCatchmentAdded, onChannelAdded]);
+  }, [onCatchmentAdded, onChannelAdded, processPolygonFeature, processLineFeature]);
 
   // Handle feature deletion
   const handleDrawDelete = useCallback((e: unknown) => {
