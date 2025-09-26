@@ -105,12 +105,14 @@ export default function MapboxCatchmentDrawer({
         });
 
         // Add 3D terrain
-        map.current.on('load', () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (map.current as any).on('load', () => {
           if (!map.current) return;
 
           try {
             // Add terrain source
-            map.current.addSource('mapbox-dem', {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (map.current as any).addSource('mapbox-dem', {
               'type': 'raster-dem',
               'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
               'tileSize': 512,
@@ -118,10 +120,12 @@ export default function MapboxCatchmentDrawer({
             });
 
             // Set terrain
-            map.current.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (map.current as any).setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
 
             // Add sky layer for better 3D effect
-            map.current.addLayer({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (map.current as any).addLayer({
               'id': 'sky',
               'type': 'sky',
               'paint': {
@@ -245,12 +249,16 @@ export default function MapboxCatchmentDrawer({
             });
 
             // Add draw control to map
-            map.current.addControl(draw.current);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (map.current as any).addControl(draw.current);
 
             // Handle draw events
-            map.current.on('draw.create', handleDrawCreate);
-            map.current.on('draw.update', handleDrawUpdate);
-            map.current.on('draw.delete', handleDrawDelete);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (map.current as any).on('draw.create', handleDrawCreate);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (map.current as any).on('draw.update', handleDrawUpdate);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (map.current as any).on('draw.delete', handleDrawDelete);
 
             setIsMapLoaded(true);
             setIsLoading(false);
@@ -262,7 +270,8 @@ export default function MapboxCatchmentDrawer({
         });
 
         // Handle map errors
-        map.current.on('error', (e: unknown) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (map.current as any).on('error', (e: unknown) => {
           console.error('Map error:', e);
           setMapError('Map failed to load. Please check your internet connection and try again.');
           setIsLoading(false);
@@ -612,7 +621,7 @@ export default function MapboxCatchmentDrawer({
   };
 
   // Process a polygon feature and create catchment data
-  const processPolygonFeature = async (feature: unknown) => {
+  const processPolygonFeature = useCallback(async (feature: unknown) => {
     try {
       setIsExtractingSlope(true);
       
@@ -666,7 +675,7 @@ export default function MapboxCatchmentDrawer({
     } finally {
       setIsExtractingSlope(false);
     }
-  };
+  }, [onCatchmentAdded, addCatchmentLabel]);
 
   // Add catchment name label to the map
   const addCatchmentLabel = (catchment: CatchmentData) => {
@@ -781,7 +790,7 @@ export default function MapboxCatchmentDrawer({
   // };
 
   // Process a line feature for channel alignment
-  const processLineFeature = async (feature: unknown) => {
+  const processLineFeature = useCallback(async (feature: unknown) => {
     try {
       // Calculate line length using Turf.js
       const length = turf.length(feature, { units: 'meters' });
@@ -823,7 +832,7 @@ export default function MapboxCatchmentDrawer({
       console.error("Error processing line feature:", error);
       alert("Error processing the drawn line. Please try again.");
     }
-  };
+  }, [onChannelAdded, calculateChannelGradient]);
 
   // Toolbar functions
   const setDrawingMode = (mode: string) => {
