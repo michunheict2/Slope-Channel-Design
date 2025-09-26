@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { CatchmentData } from "../types";
 
 // Dynamic imports to avoid SSR issues
@@ -395,7 +395,7 @@ export default function MapboxCatchmentDrawer({
   }, [catchments, isMapLoaded]);
 
   // Handle feature creation
-  const handleDrawCreate = async (e: unknown) => {
+  const handleDrawCreate = useCallback(async (e: unknown) => {
     const features = e.features;
     for (const feature of features) {
       if (feature.geometry.type === 'Polygon') {
@@ -404,10 +404,10 @@ export default function MapboxCatchmentDrawer({
         processLineFeature(feature);
       }
     }
-  };
+  }, [onCatchmentAdded, onChannelAdded]);
 
   // Handle feature updates
-  const handleDrawUpdate = async (e: unknown) => {
+  const handleDrawUpdate = useCallback(async (e: unknown) => {
     const features = e.features;
     for (const feature of features) {
       if (feature.geometry.type === 'Polygon') {
@@ -416,10 +416,10 @@ export default function MapboxCatchmentDrawer({
         processLineFeature(feature);
       }
     }
-  };
+  }, [onCatchmentAdded, onChannelAdded]);
 
   // Handle feature deletion
-  const handleDrawDelete = (e: unknown) => {
+  const handleDrawDelete = useCallback((e: unknown) => {
     const deletedFeatures = e.features;
     
     deletedFeatures.forEach((feature: unknown) => {
@@ -441,7 +441,7 @@ export default function MapboxCatchmentDrawer({
         }
       }
     });
-  };
+  }, [catchments, channels, onCatchmentRemoved, onChannelRemoved]);
 
   // Calculate channel gradient from elevation data
   const calculateChannelGradient = async (coordinates: number[][]) => {

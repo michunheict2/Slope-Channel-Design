@@ -1,9 +1,7 @@
 declare module '@mapbox/mapbox-gl-draw' {
-  import { Map } from 'mapbox-gl';
-  
   interface DrawOptions {
     defaultMode?: string;
-    styles?: any[];
+    styles?: unknown[];
     displayControlsDefault?: boolean;
     controls?: {
       point?: boolean;
@@ -17,17 +15,17 @@ declare module '@mapbox/mapbox-gl-draw' {
   
   class MapboxDraw {
     constructor(options?: DrawOptions);
-    add(geojson: any): string[];
+    add(geojson: unknown): string[];
     delete(ids: string[]): void;
     delete(id: string): void;
-    getAll(): any;
-    getSelected(): any;
+    getAll(): unknown;
+    getSelected(): unknown;
     getSelectedIds(): string[];
     getMode(): string;
-    changeMode(mode: string, options?: any): void;
-    setFeatureProperty(id: string, property: string, value: any): void;
-    on(type: string, listener: (e: any) => void): void;
-    off(type: string, listener: (e: any) => void): void;
+    changeMode(mode: string, options?: unknown): void;
+    setFeatureProperty(id: string, property: string, value: unknown): void;
+    on(type: string, listener: (e: unknown) => void): void;
+    off(type: string, listener: (e: unknown) => void): void;
   }
   
   export = MapboxDraw;
