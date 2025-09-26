@@ -12,15 +12,22 @@ export default function Home() {
           <p className="text-xl text-muted-foreground mb-8">
             Professional hydrology calculations for trapezoidal channel design using the Rational Method and Manning&apos;s equation.
           </p>
-          <Link href="/design">
-            <Button size="lg" className="text-lg px-8 py-3">
-              Start Designing
-            </Button>
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/design">
+              <Button size="lg" className="text-lg px-8 py-3">
+                Start Designing
+              </Button>
+            </Link>
+            <Link href="/auto-sizing">
+              <Button size="lg" variant="outline" className="text-lg px-8 py-3">
+                Auto Channel Sizing
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Rational Method</CardTitle>
@@ -50,6 +57,17 @@ export default function Home() {
             <CardContent>
               <p className="text-sm text-muted-foreground">
                 Calculate cross-sectional area, wetted perimeter, and hydraulic radius for trapezoidal channels.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Auto Channel Sizing</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Automatically determine optimal channel size based on catchment characteristics and flow requirements.
               </p>
             </CardContent>
           </Card>

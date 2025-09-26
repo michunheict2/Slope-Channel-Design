@@ -115,7 +115,7 @@ export default function RainfallForm({ data, onChange }: RainfallFormProps) {
       newInputValues[index] = value.toString();
       setInputValues(newInputValues);
     } else {
-      newChannels[index] = { ...newChannels[index], [field]: value };
+      newChannels[index] = { ...newChannels[index], [field]: String(value) };
     }
     setUpstreamChannels(newChannels);
     
