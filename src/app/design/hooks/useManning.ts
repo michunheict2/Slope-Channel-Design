@@ -103,7 +103,7 @@ export function manningFlow(
  */
 export function normalDepthAndCapacity(
   inputs: ManningInputs,
-  options: BisectionOptions = {}
+  // options: BisectionOptions = {}
 ): ManningResult {
   const {
     shape,

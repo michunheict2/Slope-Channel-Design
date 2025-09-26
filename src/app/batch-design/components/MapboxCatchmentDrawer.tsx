@@ -24,8 +24,8 @@ export default function MapboxCatchmentDrawer({
   onChannelAdded,
   catchments,
   channels,
-  showVisualization = false,
-  onCatchmentUpdated,
+  // showVisualization = false,
+  // onCatchmentUpdated,
   onCatchmentRemoved,
   onChannelRemoved
 }: MapboxCatchmentDrawerProps) {
@@ -281,7 +281,7 @@ export default function MapboxCatchmentDrawer({
         map.current = null;
       }
     };
-  }, []);
+  }, [handleDrawCreate, handleDrawDelete, handleDrawUpdate]);
 
   // Update catchment labels when catchments change
   useEffect(() => {
