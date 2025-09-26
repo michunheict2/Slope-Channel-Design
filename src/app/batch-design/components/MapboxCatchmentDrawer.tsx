@@ -294,7 +294,7 @@ export default function MapboxCatchmentDrawer({
         map.current = null;
       }
     };
-  }, [handleDrawCreate, handleDrawDelete, handleDrawUpdate]);
+  }, []);
 
   // Update catchment labels when catchments change
   useEffect(() => {
@@ -316,8 +316,8 @@ export default function MapboxCatchmentDrawer({
       }));
 
       // Update the source with all current labels
-      if (map.current.getSource('catchment-labels')) {
-        map.current.getSource('catchment-labels').setData({
+      if ((map.current as any).getSource('catchment-labels')) {
+        (map.current as any).getSource('catchment-labels').setData({
           type: 'FeatureCollection',
           features: labelFeatures
         });
@@ -763,7 +763,7 @@ export default function MapboxCatchmentDrawer({
 
       // Update the source with new label
       const currentFeatures = map.current.getSource('catchment-labels')._data.features || [];
-      map.current.getSource('catchment-labels').setData({
+      (map.current as any).getSource('catchment-labels').setData({
         type: 'FeatureCollection',
         features: [...currentFeatures, labelPoint]
       });
@@ -781,7 +781,7 @@ export default function MapboxCatchmentDrawer({
   //     const currentFeatures = map.current.getSource('catchment-labels')._data.features || [];
   //     const filteredFeatures = currentFeatures.filter((feature: unknown) => feature.properties.id !== catchmentId);
       
-  //     map.current.getSource('catchment-labels').setData({
+  //     (map.current as any).getSource('catchment-labels').setData({
   //       type: 'FeatureCollection',
   //       features: filteredFeatures
   //     });
