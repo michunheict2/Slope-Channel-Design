@@ -289,7 +289,8 @@ export default function MapboxCatchmentDrawer({
     // Cleanup
     return () => {
       if (map.current) {
-        map.current.remove();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (map.current as any).remove();
         map.current = null;
       }
     };
@@ -675,7 +676,7 @@ export default function MapboxCatchmentDrawer({
     } finally {
       setIsExtractingSlope(false);
     }
-  }, [onCatchmentAdded, addCatchmentLabel]);
+  }, [onCatchmentAdded, addCatchmentLabel, catchments.length]);
 
   // Add catchment name label to the map
   const addCatchmentLabel = (catchment: CatchmentData) => {
@@ -832,7 +833,7 @@ export default function MapboxCatchmentDrawer({
       console.error("Error processing line feature:", error);
       alert("Error processing the drawn line. Please try again.");
     }
-  }, [onChannelAdded, calculateChannelGradient]);
+  }, [onChannelAdded, calculateChannelGradient, channels.length]);
 
   // Toolbar functions
   const setDrawingMode = (mode: string) => {
