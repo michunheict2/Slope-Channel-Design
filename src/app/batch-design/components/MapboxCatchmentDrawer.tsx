@@ -333,7 +333,7 @@ export default function MapboxCatchmentDrawer({
 
     try {
       // Update all channel labels
-      const channelLabelFeatures = channels.map(channel => {
+      const channelLabelFeatures = channels.map((channel: any) => {
         // Calculate midpoint along the line using Turf.js
         const coordinates = channel.coordinates;
         if (coordinates.length < 2) return null;
@@ -348,8 +348,8 @@ export default function MapboxCatchmentDrawer({
         };
         
         // Calculate the midpoint along the line
-        const lineLength = turf.length(lineFeature, { units: 'meters' });
-        const midPoint = turf.along(lineFeature, lineLength / 2, { units: 'meters' });
+        const lineLength = (turf as any).length(lineFeature, { units: 'meters' });
+        const midPoint = (turf as any).along(lineFeature, lineLength / 2, { units: 'meters' });
         
         return {
           type: 'Feature',
@@ -794,7 +794,7 @@ export default function MapboxCatchmentDrawer({
   const processLineFeature = useCallback(async (feature: unknown) => {
     try {
       // Calculate line length using Turf.js
-      const length = turf.length(feature, { units: 'meters' });
+      const length = (turf as any).length(feature, { units: 'meters' });
       
       // Get line coordinates
       const coordinates = feature.geometry.coordinates;
