@@ -366,8 +366,8 @@ export default function MapboxCatchmentDrawer({
       }).filter(Boolean); // Remove null values
 
       // Update the source with all current channel labels
-      if (map.current.getSource('channel-labels')) {
-        map.current.getSource('channel-labels').setData({
+      if ((map.current as any).getSource('channel-labels')) {
+        (map.current as any).getSource('channel-labels').setData({
           type: 'FeatureCollection',
           features: channelLabelFeatures
         });
