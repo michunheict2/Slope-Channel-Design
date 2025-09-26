@@ -38,7 +38,7 @@ export default function PDFExport({
     const addText = (text: string, x: number, y: number, options: Record<string, unknown> = {}) => {
       const lines = doc.splitTextToSize(text, pageWidth - x - 20);
       doc.text(lines, x, y);
-      return y + (lines.length * (options.lineHeight || 7));
+      return y + (lines.length * ((options.lineHeight as number) || 7));
     };
 
     // Helper function to add a section header
@@ -359,7 +359,7 @@ export default function PDFExport({
     });
 
     // Footer
-    const finalY = (doc as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 20;
+    const finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 20;
     doc.setFontSize(8);
     doc.setFont("arial", "italic");
     doc.setTextColor(128, 128, 128);
