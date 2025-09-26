@@ -1,5 +1,4 @@
 import { CatchmentData, BatchCalculationResult, ChannelAlignment } from "../types";
-import { useIDF } from "../../design/hooks/useIDF";
 import { mmPerHourToMetersPerSecond } from "../../design/utils/units";
 import { calculateTrapezoidGeometry, calculateUChannelGeometry } from "../../design/utils/geometry";
 
@@ -50,17 +49,6 @@ function calculateCatchmentTC(area: number, slope: number, length: number): numb
   return Math.max(tc, 5); // Minimum 5 minutes
 }
 
-// Calculate the larger Time of Concentration
-function getEffectiveTC(
-  catchmentArea: number, 
-  averageSlope: number, 
-  flowPathLength: number,
-  upstreamChannelTCs: number[]
-): number {
-  const catchmentTCValue = calculateCatchmentTC(catchmentArea, averageSlope, flowPathLength);
-  const upstreamTCValue = upstreamChannelTCs.length > 0 ? Math.max(...upstreamChannelTCs) : 0;
-  return Math.max(catchmentTCValue, upstreamTCValue);
-}
 
 // Calculate peak flow using Rational Method
 function calculatePeakFlow(
@@ -69,7 +57,7 @@ function calculatePeakFlow(
   tc: number,
   returnPeriod: number,
   useIDF: boolean,
-  idfConstants: any[],
+  idfConstants: unknown[],
   calculateIDF: (rp: number, tc: number, climateChange: boolean) => { intensity: number }
 ): { peakFlow: number; rainfallIntensity: number; runoffCoefficient: number } {
   const surfaceTypeData = SURFACE_TYPES.find(s => s.id === surfaceType);
@@ -210,7 +198,7 @@ async function processSingleCatchment(
       channelNo: string;
     }>;
   },
-  idfConstants: any[],
+  idfConstants: unknown[],
   calculateIDF: (rp: number, tc: number, climateChange: boolean) => { intensity: number }
 ): Promise<BatchCalculationResult> {
   
@@ -220,7 +208,7 @@ async function processSingleCatchment(
     
     // Get upstream channel TCs (calculate automatically)
     const upstreamTCs = channelProperties.upstreamChannels
-      .map(ch => {
+      .map(() => {
         // For now, use a default calculation based on channel length
         // In a real implementation, this would calculate based on channel properties
         // Using a simplified formula: TC = 0.02 * L^0.77 * S^-0.385
@@ -363,7 +351,7 @@ export async function processBatchCatchments(
 ): Promise<BatchCalculationResult[]> {
   // Load IDF constants (we'll need to handle this differently since we can't use hooks in utils)
   // For now, we'll use a simplified approach with default values
-  const idfConstants: any[] = []; // This would be loaded from the IDF hook
+  const idfConstants: unknown[] = []; // This would be loaded from the IDF hook
   const calculateIDF = (rp: number, tc: number, climateChange: boolean) => {
     // Simplified IDF calculation - in a real implementation, this would use the actual IDF constants
     const baseIntensity = 100; // mm/hr

@@ -72,7 +72,7 @@ export default function RainfallForm({ data, onChange }: RainfallFormProps) {
         console.error('IDF calculation error:', err);
       }
     }
-  }, [returnPeriod, duration, temporaryDesign, useIDFCurve, constants]);
+  }, [returnPeriod, duration, temporaryDesign, useIDFCurve, constants, calculate, data, onChange]);
 
   const handleIntensityChange = (value: string) => {
     setIntensity(value);

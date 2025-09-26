@@ -3,7 +3,7 @@
  */
 
 import { calculateTrapezoidGeometry, calculateUChannelGeometry } from "../utils/geometry";
-import { bisection, BisectionOptions } from "../utils/numeric";
+// import { bisection, BisectionOptions } from "../utils/numeric";
 
 export interface ManningInputs {
   shape: string;          // Channel shape: "trapezoid" or "u-shaped"
@@ -110,7 +110,7 @@ export function normalDepthAndCapacity(
     bottomWidth,
     sideSlope,
     channelDepth,
-    topWidth,
+    // topWidth,
     width,
     radius,
     flowDepth,
@@ -125,13 +125,13 @@ export function normalDepthAndCapacity(
   }
 
   // Set default bisection options
-  const bisectionOptions: BisectionOptions = {
-    maxIterations: 80,
-    tolerance: 1e-4,
-    minBound: 1e-4, // 0.1 mm minimum depth
-    maxBound: 5.0,  // 5 m maximum depth
-    ...options,
-  };
+  // const bisectionOptions: BisectionOptions = {
+  //   maxIterations: 80,
+  //   tolerance: 1e-4,
+  //   minBound: 1e-4, // 0.1 mm minimum depth
+  //   maxBound: 5.0,  // 5 m maximum depth
+  //   ...options,
+  // };
 
   let normalDepth: number;
   let geometry: { area: number; perimeter: number; hydraulicRadius: number };

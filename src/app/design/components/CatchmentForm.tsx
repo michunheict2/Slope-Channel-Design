@@ -64,7 +64,7 @@ export default function CatchmentForm({ data, onChange }: CatchmentFormProps) {
       timeOfConcentration
     };
     onChange(newData);
-  }, [area, averageSlope, flowPathLength]);
+  }, [area, averageSlope, flowPathLength, data, onChange]);
 
   const handleAreaChange = (value: string) => {
     setArea(value);
