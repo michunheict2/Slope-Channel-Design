@@ -27,7 +27,7 @@ export default function BatchPDFExport({ summary, channelData }: BatchPDFExportP
         doc.setFont('helvetica', isBold ? 'bold' : 'normal');
         doc.setTextColor(color);
         
-        const lines = doc.splitTextToSize(text, pageWidth - 40);
+        const lines = doc.splitTextToSize(text, pageWidth - 40) as string[];
         doc.text(lines, 20, yPosition);
         yPosition += lines.length * fontSize * 0.4 + 5;
         
@@ -150,7 +150,7 @@ export default function BatchPDFExport({ summary, channelData }: BatchPDFExportP
         addText(`• Surface Type: ${inputData.surfaceType}`);
         addText(`• Return Period: ${inputData.returnPeriod} years`);
         addText(`• Channel Shape: ${inputData.channelShape}`);
-        addText(`• Channel Gradient: ${inputData.channelGradient.toFixed(4)} m/m`);
+        addText(`• Channel Gradient: ${(inputData.channelGradient as number).toFixed(4)} m/m`);
         addText(`• Channel Material: ${inputData.channelMaterial}`);
         yPosition += 5;
 
@@ -239,7 +239,7 @@ export default function BatchPDFExport({ summary, channelData }: BatchPDFExportP
         
         addText('CHANNEL PARAMETERS:', 10, true);
         addText(`• Channel Shape: ${inputData.channelShape === "trapezoidal" ? "Trapezoidal" : "U-Channel"}`);
-        addText(`• Channel Gradient: ${inputData.channelGradient.toFixed(4)} m/m`);
+        addText(`• Channel Gradient: ${(inputData.channelGradient as number).toFixed(4)} m/m`);
         addText(`• Channel Material: ${materialData?.name}`);
         addText(`• Manning's n: ${materialData?.manningN.toFixed(3)}`);
         
@@ -258,7 +258,7 @@ export default function BatchPDFExport({ summary, channelData }: BatchPDFExportP
         addText(`• n = Manning's roughness = ${materialData?.manningN.toFixed(3)}`);
         addText('• A = Cross-sectional area (m²)');
         addText('• R = Hydraulic radius (m)');
-        addText(`• S = Longitudinal slope = ${inputData.channelGradient.toFixed(4)} m/m`);
+        addText(`• S = Longitudinal slope = ${(inputData.channelGradient as number).toFixed(4)} m/m`);
         addText(`• Target Flow: ${result.peakFlow.toFixed(3)} m³/s`);
         yPosition += 3;
         

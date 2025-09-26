@@ -33,10 +33,10 @@ export default function PDFExport({
     let yPosition = 20;
 
     // Helper function to add text with automatic line breaks
-    const addText = (text: string, x: number, y: number, options: Record<string, unknown> = {}) => {
-      const lines = doc.splitTextToSize(text, pageWidth - x - 20);
+    const addText = (text: string, x: number, y: number, options: { lineHeight?: number } = {}) => {
+      const lines = doc.splitTextToSize(text, pageWidth - x - 20) as string[];
       doc.text(lines, x, y);
-      return y + (lines.length * ((options.lineHeight as number) || 7));
+      return y + (lines.length * (options.lineHeight || 7));
     };
 
     // Helper function to add a section header
@@ -316,7 +316,7 @@ export default function PDFExport({
     });
 
     // Footer
-    const finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 20;
+    const finalY = (doc as typeof doc & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 20;
     doc.setFontSize(8);
     doc.setFont("arial", "italic");
     doc.setTextColor(128, 128, 128);

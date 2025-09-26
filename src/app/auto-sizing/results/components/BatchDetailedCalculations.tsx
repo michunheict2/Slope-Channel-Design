@@ -297,7 +297,10 @@ export default function BatchDetailedCalculations({ summary, channelData }: Batc
               
               {expandedChannels.has(result.channelId) && (
                 <div className="px-4 pb-4">
-                  {renderDetailedCalculation(result, channelData.find(d => d.channelId === result.channelId) || {})}
+                  {(() => {
+                    const channelDataItem = channelData.find(d => d.channelId === result.channelId);
+                    return channelDataItem ? renderDetailedCalculation(result, channelDataItem) : null;
+                  })()}
                 </div>
               )}
             </div>
