@@ -23,11 +23,16 @@ export default function Home() {
                 Auto Channel Sizing
               </Button>
             </Link>
+            <Link href="/batch-design">
+              <Button size="lg" variant="secondary" className="text-lg px-8 py-3">
+                Batch Design
+              </Button>
+            </Link>
           </div>
         </div>
 
         {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Rational Method</CardTitle>
@@ -68,6 +73,17 @@ export default function Home() {
             <CardContent>
               <p className="text-sm text-muted-foreground">
                 Automatically determine optimal channel size based on catchment characteristics and flow requirements.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Batch Design</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Draw multiple catchments on 3D maps and process drainage designs in batch with comprehensive results.
               </p>
             </CardContent>
           </Card>
