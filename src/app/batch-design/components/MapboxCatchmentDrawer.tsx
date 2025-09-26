@@ -89,9 +89,11 @@ export default function MapboxCatchmentDrawer({
         }
 
         // Set Mapbox access token
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (mapboxgl as any).accessToken = MAPBOX_ACCESS_TOKEN;
 
         // Initialize map with 3D terrain
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         map.current = new (mapboxgl as any).Map({
           container: mapContainer.current,
           style: 'mapbox://styles/mapbox/satellite-streets-v12', // Satellite view with streets
@@ -130,6 +132,7 @@ export default function MapboxCatchmentDrawer({
             });
 
             // Initialize Mapbox Draw
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             draw.current = new (MapboxDraw as any)({
               displayControlsDefault: false,
               controls: {
@@ -404,7 +407,7 @@ export default function MapboxCatchmentDrawer({
         processLineFeature(feature);
       }
     }
-  }, [onCatchmentAdded, onChannelAdded, processPolygonFeature, processLineFeature]);
+  }, [processPolygonFeature, processLineFeature]);
 
   // Handle feature updates
   const handleDrawUpdate = useCallback(async (e: unknown) => {
@@ -416,7 +419,7 @@ export default function MapboxCatchmentDrawer({
         processLineFeature(feature);
       }
     }
-  }, [onCatchmentAdded, onChannelAdded, processPolygonFeature, processLineFeature]);
+  }, [processPolygonFeature, processLineFeature]);
 
   // Handle feature deletion
   const handleDrawDelete = useCallback((e: unknown) => {
