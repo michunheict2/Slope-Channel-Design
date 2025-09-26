@@ -52,7 +52,7 @@ export interface BatchCalculationResult {
 // Mapbox draw event types
 export interface MapboxDrawEvent {
   type: string;
-  features: any[];
+  features: unknown[];
 }
 
 // Surface type options (same as in existing code)

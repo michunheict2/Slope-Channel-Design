@@ -45,10 +45,10 @@ export default function BatchPDFExport({ summary, channelData }: BatchPDFExportP
       };
 
       // Helper function to add a subsection
-      const addSubsection = (title: string) => {
-        addText(title, 12, true, '#374151');
-        yPosition += 3;
-      };
+      // const addSubsection = (title: string) => {
+      //   addText(title, 12, true, '#374151');
+      //   yPosition += 3;
+      // };
 
       // Title Page
       addText('BATCH CHANNEL DESIGN CALCULATIONS', 16, true, '#1e40af');

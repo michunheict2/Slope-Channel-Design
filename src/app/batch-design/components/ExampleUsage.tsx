@@ -76,8 +76,8 @@ export default function ExampleUsage() {
                 Run Batch Calculations
               </h4>
               <p className="text-sm text-muted-foreground mt-1">
-                Click "Run Batch Design" to process all catchments using the Rational Method 
-                and Manning's equation. The system will calculate peak flows, required channel 
+                Click &quot;Run Batch Design&quot; to process all catchments using the Rational Method 
+                and Manning&apos;s equation. The system will calculate peak flows, required channel 
                 sizes, and design status for each catchment.
               </p>
             </div>
@@ -93,7 +93,7 @@ export default function ExampleUsage() {
                 View Results & Export
               </h4>
               <p className="text-sm text-muted-foreground mt-1">
-                View detailed results in the table and click "Show Detailed Calculations" to see 
+                View detailed results in the table and click &quot;Show Detailed Calculations&quot; to see 
                 step-by-step calculations for each catchment. Export to CSV or Excel format with 
                 all calculation details, design status, and warnings.
               </p>

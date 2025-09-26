@@ -4,15 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import { CatchmentData } from "../types";
 
 // Dynamic imports to avoid SSR issues
-let mapboxgl: any = null;
-let MapboxDraw: any = null;
-let turf: any = null;
+let mapboxgl: unknown = null;
+let MapboxDraw: unknown = null;
+let turf: unknown = null;
 
 interface MapboxCatchmentDrawerProps {
   onCatchmentAdded: (catchment: CatchmentData) => void;
-  onChannelAdded: (channel: any) => void;
+  onChannelAdded: (channel: unknown) => void;
   catchments: CatchmentData[];
-  channels: any[];
+  channels: unknown[];
   showVisualization?: boolean;
   onCatchmentUpdated?: (catchment: CatchmentData) => void;
   onCatchmentRemoved?: (catchmentId: string) => void;
@@ -30,32 +30,32 @@ export default function MapboxCatchmentDrawer({
   onChannelRemoved
 }: MapboxCatchmentDrawerProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<any>(null);
-  const draw = useRef<any>(null);
+  const map = useRef<unknown>(null);
+  const draw = useRef<unknown>(null);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [currentMode, setCurrentMode] = useState<string>('simple_select');
-  const [isExtractingSlope, setIsExtractingSlope] = useState(false);
+  // const [isExtractingSlope, setIsExtractingSlope] = useState(false);
   const [showToolsPopup, setShowToolsPopup] = useState(false);
   const [isMeasuring, setIsMeasuring] = useState(false);
   const [measurementPoints, setMeasurementPoints] = useState<number[][]>([]);
-  const [measurementResults, setMeasurementResults] = useState<any>(null);
+  const [measurementResults, setMeasurementResults] = useState<unknown>(null);
 
   // Surface type options (same as in existing code)
-  const SURFACE_TYPES = [
-    { id: "undrain", name: "Undrained", coefficient: 1.0 },
-    { id: "asphalt", name: "Asphalt/Concrete", coefficient: 0.90 },
-    { id: "roof", name: "Roofs", coefficient: 0.85 },
-    { id: "gravel", name: "Gravel", coefficient: 0.35 },
-    { id: "lawn", name: "Lawn/Grass", coefficient: 0.20 },
-    { id: "lawn_steep", name: "Lawn/Grass (Steep)", coefficient: 0.25 },
-    { id: "forest", name: "Forest", coefficient: 0.10 },
-    { id: "bare_soil", name: "Bare Soil", coefficient: 0.30 },
-    { id: "cultivated", name: "Cultivated Land", coefficient: 0.35 },
-    { id: "pasture", name: "Pasture/Range", coefficient: 0.20 },
-    { id: "desert", name: "Desert/Barren", coefficient: 0.70 },
-  ];
+  // const SURFACE_TYPES = [
+  //   { id: "undrain", name: "Undrained", coefficient: 1.0 },
+  //   { id: "asphalt", name: "Asphalt/Concrete", coefficient: 0.90 },
+  //   { id: "roof", name: "Roofs", coefficient: 0.85 },
+  //   { id: "gravel", name: "Gravel", coefficient: 0.35 },
+  //   { id: "lawn", name: "Lawn/Grass", coefficient: 0.20 },
+  //   { id: "lawn_steep", name: "Lawn/Grass (Steep)", coefficient: 0.25 },
+  //   { id: "forest", name: "Forest", coefficient: 0.10 },
+  //   { id: "bare_soil", name: "Bare Soil", coefficient: 0.30 },
+  //   { id: "cultivated", name: "Cultivated Land", coefficient: 0.35 },
+  //   { id: "pasture", name: "Pasture/Range", coefficient: 0.20 },
+  //   { id: "desert", name: "Desert/Barren", coefficient: 0.70 },
+  // ];
 
   // Initialize Mapbox map
   useEffect(() => {
@@ -259,7 +259,7 @@ export default function MapboxCatchmentDrawer({
         });
 
         // Handle map errors
-        map.current.on('error', (e: any) => {
+        map.current.on('error', (e: unknown) => {
           console.error('Map error:', e);
           setMapError('Map failed to load. Please check your internet connection and try again.');
           setIsLoading(false);
@@ -373,7 +373,7 @@ export default function MapboxCatchmentDrawer({
       const currentFeatures = draw.current.getAll();
       
       // Find features that need to be removed (exist on map but not in catchments)
-      const featuresToRemove = currentFeatures.features.filter((feature: any) => {
+      const featuresToRemove = currentFeatures.features.filter((feature: unknown) => {
         if (feature.geometry.type === 'Polygon') {
           // Check if this polygon corresponds to a catchment that still exists
           const correspondingCatchment = catchments.find(c => 
@@ -385,7 +385,7 @@ export default function MapboxCatchmentDrawer({
       });
 
       // Remove features that no longer have corresponding catchments
-      featuresToRemove.forEach((feature: any) => {
+      featuresToRemove.forEach((feature: unknown) => {
         draw.current.delete(feature.id);
       });
 
@@ -395,7 +395,7 @@ export default function MapboxCatchmentDrawer({
   }, [catchments, isMapLoaded]);
 
   // Handle feature creation
-  const handleDrawCreate = async (e: any) => {
+  const handleDrawCreate = async (e: unknown) => {
     const features = e.features;
     for (const feature of features) {
       if (feature.geometry.type === 'Polygon') {
@@ -407,7 +407,7 @@ export default function MapboxCatchmentDrawer({
   };
 
   // Handle feature updates
-  const handleDrawUpdate = async (e: any) => {
+  const handleDrawUpdate = async (e: unknown) => {
     const features = e.features;
     for (const feature of features) {
       if (feature.geometry.type === 'Polygon') {
@@ -419,10 +419,10 @@ export default function MapboxCatchmentDrawer({
   };
 
   // Handle feature deletion
-  const handleDrawDelete = (e: any) => {
+  const handleDrawDelete = (e: unknown) => {
     const deletedFeatures = e.features;
     
-    deletedFeatures.forEach((feature: any) => {
+    deletedFeatures.forEach((feature: unknown) => {
       if (feature.geometry.type === 'Polygon') {
         // Find and remove the corresponding catchment
         const catchment = catchments.find(c => 
@@ -494,7 +494,7 @@ export default function MapboxCatchmentDrawer({
       }
       
       // Sample interior points using a grid
-      const bbox = turf.bbox(turf.polygon([coordinates]));
+      // const bbox = turf.bbox(turf.polygon([coordinates]));
       const gridSize = 5; // Sample every 5 points for performance
       
       for (let i = 0; i < coordinates.length - 1; i += gridSize) {
@@ -609,7 +609,7 @@ export default function MapboxCatchmentDrawer({
   };
 
   // Process a polygon feature and create catchment data
-  const processPolygonFeature = async (feature: any) => {
+  const processPolygonFeature = async (feature: unknown) => {
     try {
       setIsExtractingSlope(true);
       
@@ -761,24 +761,24 @@ export default function MapboxCatchmentDrawer({
   };
 
   // Remove catchment label from the map
-  const removeCatchmentLabel = (catchmentId: string) => {
-    if (!map.current || !map.current.getSource('catchment-labels')) return;
+  // const removeCatchmentLabel = (catchmentId: string) => {
+  //   if (!map.current || !map.current.getSource('catchment-labels')) return;
 
-    try {
-      const currentFeatures = map.current.getSource('catchment-labels')._data.features || [];
-      const filteredFeatures = currentFeatures.filter((feature: any) => feature.properties.id !== catchmentId);
+  //   try {
+  //     const currentFeatures = map.current.getSource('catchment-labels')._data.features || [];
+  //     const filteredFeatures = currentFeatures.filter((feature: unknown) => feature.properties.id !== catchmentId);
       
-      map.current.getSource('catchment-labels').setData({
-        type: 'FeatureCollection',
-        features: filteredFeatures
-      });
-    } catch (error) {
-      console.error('Error removing catchment label:', error);
-    }
-  };
+  //     map.current.getSource('catchment-labels').setData({
+  //       type: 'FeatureCollection',
+  //       features: filteredFeatures
+  //     });
+  //   } catch (error) {
+  //     console.error('Error removing catchment label:', error);
+  //   }
+  // };
 
   // Process a line feature for channel alignment
-  const processLineFeature = async (feature: any) => {
+  const processLineFeature = async (feature: unknown) => {
     try {
       // Calculate line length using Turf.js
       const length = turf.length(feature, { units: 'meters' });
@@ -1057,7 +1057,7 @@ export default function MapboxCatchmentDrawer({
   };
 
   // Handle click for measuring
-  const handleMeasureClick = async (e: any) => {
+  const handleMeasureClick = async (e: unknown) => {
     if (!isMeasuring || !map.current) return;
 
     const newPoint = [e.lngLat.lng, e.lngLat.lat];
@@ -1191,7 +1191,7 @@ export default function MapboxCatchmentDrawer({
   const clearCatchments = () => {
     if (draw.current) {
       const features = draw.current.getAll();
-      features.features.forEach((feature: any) => {
+      features.features.forEach((feature: unknown) => {
         if (feature.geometry.type === 'Polygon') {
           draw.current.delete(feature.id);
         }
@@ -1209,7 +1209,7 @@ export default function MapboxCatchmentDrawer({
   const clearChannels = () => {
     if (draw.current) {
       const features = draw.current.getAll();
-      features.features.forEach((feature: any) => {
+      features.features.forEach((feature: unknown) => {
         if (feature.geometry.type === 'LineString') {
           draw.current.delete(feature.id);
         }

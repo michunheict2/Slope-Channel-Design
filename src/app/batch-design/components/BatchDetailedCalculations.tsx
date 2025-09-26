@@ -44,13 +44,13 @@ export default function BatchDetailedCalculations({ results }: BatchDetailedCalc
     return num.toFixed(decimals);
   };
 
-  const formatArea = (area: number) => {
-    if (area >= 10000) {
-      return `${(area / 10000).toFixed(2)} ha`;
-    } else {
-      return `${area.toFixed(0)} m²`;
-    }
-  };
+  // const formatArea = (area: number) => {
+  //   if (area >= 10000) {
+  //     return `${(area / 10000).toFixed(2)} ha`;
+  //   } else {
+  //     return `${area.toFixed(0)} m²`;
+  //   }
+  // };
 
   return (
     <Card>
@@ -71,7 +71,7 @@ export default function BatchDetailedCalculations({ results }: BatchDetailedCalc
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {results.map((result, index) => {
+        {results.map((result) => {
           const isExpanded = expandedCatchments.has(result.catchmentId);
           
           return (
@@ -254,7 +254,7 @@ export default function BatchDetailedCalculations({ results }: BatchDetailedCalc
                     <div className="space-y-3">
                       <h4 className="font-semibold text-lg flex items-center gap-2">
                         <span className="bg-purple-100 text-purple-800 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">5</span>
-                        Channel Design (Manning's Equation)
+                        Channel Design (Manning&apos;s Equation)
                       </h4>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -288,7 +288,7 @@ export default function BatchDetailedCalculations({ results }: BatchDetailedCalc
                           <h5 className="font-medium text-teal-900 mb-2">Channel Capacity</h5>
                           <p className="text-2xl font-bold text-teal-800">{formatNumber(result.calculatedFlow, 3)} m³/s</p>
                           <p className="text-sm text-teal-600 mt-1">
-                            Manning's equation result
+                            Manning&apos;s equation result
                           </p>
                         </div>
                         

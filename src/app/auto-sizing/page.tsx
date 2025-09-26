@@ -41,16 +41,16 @@ export interface AutoSizingData {
 }
 
 // Manning's n values for different materials
-const MANNING_N_VALUES = {
-  "concrete": 0.013,
-  "asphalt": 0.016,
-  "brick": 0.015,
-  "stone": 0.025,
-  "earth": 0.025,
-  "grass": 0.035,
-  "gravel": 0.030,
-  "riprap": 0.040,
-};
+// const MANNING_N_VALUES = {
+//   "concrete": 0.013,
+//   "asphalt": 0.016,
+//   "brick": 0.015,
+//   "stone": 0.025,
+//   "earth": 0.025,
+//   "grass": 0.035,
+//   "gravel": 0.030,
+//   "riprap": 0.040,
+// };
 
 // Surface type options
 const SURFACE_TYPES = [
@@ -266,7 +266,7 @@ export default function AutoSizingPage() {
       }
       
       // Find the smallest regular U-channel size that can handle the flow
-      const requiredWidthMM = requiredWidth * 1000;
+      // const requiredWidthMM = requiredWidth * 1000;
       let selectedChannel = U_CHANNEL_SIZES[U_CHANNEL_SIZES.length - 1]; // Default to largest
       
       for (const channel of U_CHANNEL_SIZES) {

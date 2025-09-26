@@ -94,16 +94,16 @@ function calculateCatchmentTC(area: number, slope: number, length: number): numb
 }
 
 // Calculate the larger Time of Concentration
-function getEffectiveTC(
-  catchmentArea: number, 
-  averageSlope: number, 
-  flowPathLength: number,
-  upstreamChannelTCs: number[]
-): number {
-  const catchmentTCValue = calculateCatchmentTC(catchmentArea, averageSlope, flowPathLength);
-  const upstreamTCValue = upstreamChannelTCs.length > 0 ? Math.max(...upstreamChannelTCs) : 0;
-  return Math.max(catchmentTCValue, upstreamTCValue);
-}
+// function getEffectiveTC(
+//   catchmentArea: number, 
+//   averageSlope: number, 
+//   flowPathLength: number,
+//   upstreamChannelTCs: number[]
+// ): number {
+//   const catchmentTCValue = calculateCatchmentTC(catchmentArea, averageSlope, flowPathLength);
+//   const upstreamTCValue = upstreamChannelTCs.length > 0 ? Math.max(...upstreamChannelTCs) : 0;
+//   return Math.max(catchmentTCValue, upstreamTCValue);
+// }
 
 // Calculate peak flow using Rational Method
 function calculatePeakFlow(

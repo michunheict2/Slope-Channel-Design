@@ -7,7 +7,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { BatchCalculationResult } from "../types";
 import BatchDetailedCalculations from "./BatchDetailedCalculations";
 import { 
-  Download, 
   CheckCircle, 
   XCircle, 
   AlertTriangle,
@@ -246,7 +245,7 @@ export default function BatchResults({ results }: BatchResultsProps) {
                 </tr>
               </thead>
               <tbody>
-                {results.map((result, index) => (
+                {results.map((result) => (
                   <tr key={result.catchmentId} className="border-b hover:bg-gray-50">
                     <td className="p-2">
                       <div>

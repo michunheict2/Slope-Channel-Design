@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { ChannelAlignment, CatchmentData } from "../types";
 import { 
-  MapPin, 
   Trash2, 
   Edit3, 
   Ruler
@@ -43,9 +42,9 @@ export default function ChannelManager({
   ];
 
   // Handle updating channel properties
-  const handleChannelUpdate = (index: number, field: keyof ChannelAlignment, value: any) => {
+  const handleChannelUpdate = (index: number, field: keyof ChannelAlignment, value: unknown) => {
     const updatedChannel = { ...channels[index] };
-    (updatedChannel as any)[field] = value;
+    (updatedChannel as Record<string, unknown>)[field] = value;
     onChannelUpdated(index, updatedChannel);
   };
 
@@ -78,7 +77,7 @@ export default function ChannelManager({
             <div className="text-center py-4 text-muted-foreground">
               <Ruler className="h-8 w-8 mx-auto mb-2 opacity-50" />
               <p className="text-sm">No channel alignments drawn yet.</p>
-              <p className="text-xs">Use the "Draw Channel" tool on the map to create channel alignments.</p>
+              <p className="text-xs">Use the &quot;Draw Channel&quot; tool on the map to create channel alignments.</p>
             </div>
           ) : (
             <div className="space-y-3">

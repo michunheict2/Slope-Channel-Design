@@ -52,11 +52,11 @@ export default function CatchmentManager({
 
 
   // Handle updating catchment properties
-  const handleCatchmentUpdate = (index: number, field: keyof CatchmentData, value: any) => {
+  const handleCatchmentUpdate = (index: number, field: keyof CatchmentData, value: unknown) => {
     const updatedCatchment = { ...catchments[index] };
     
     // Update the field
-    (updatedCatchment as any)[field] = value;
+    (updatedCatchment as Record<string, unknown>)[field] = value;
     
     // If surface type changed, update runoff coefficient
     if (field === 'surfaceType') {
