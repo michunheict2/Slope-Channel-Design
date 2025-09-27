@@ -59,7 +59,7 @@ export default function ChannelForm({ data, onChange }: ChannelFormProps) {
   const [topWidth, setTopWidth] = useState(data.topWidth?.toString() || "0");
   const [width, setWidth] = useState(data.width?.toString() || "0.3");
   const [radius, setRadius] = useState(data.radius?.toString() || "0.15");
-  // const [flowDepth] = useState(data.flowDepth?.toString() || "0.1");
+  const [flowDepth, setFlowDepth] = useState(data.flowDepth?.toString() || "0.1");
   const [flowDepthMM, setFlowDepthMM] = useState(((data.flowDepth || 0.1) * 1000).toString());
   const [longitudinalSlope, setLongitudinalSlope] = useState(data.longitudinalSlope.toString());
   const [gradientInputType, setGradientInputType] = useState<'ratio' | 'oneInX'>('ratio');
