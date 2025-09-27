@@ -1,46 +1,57 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState, useCallback } from "react";
-import { CatchmentData } from "../types";
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { CatchmentData, ChannelAlignment } from '../types';
 
-// Dynamic imports to avoid SSR issues
-let mapboxgl: unknown = null;
-let MapboxDraw: unknown = null;
-let turf: unknown = null;
+// Dynamic imports to avoid SSR issues - using any for external libraries
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let mapboxgl: any = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let MapboxDraw: any = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let turf: any = null;
 
 interface MapboxCatchmentDrawerProps {
   onCatchmentAdded: (catchment: CatchmentData) => void;
-  onChannelAdded: (channel: unknown) => void;
+  onChannelAdded: (channel: ChannelAlignment) => void;
   catchments: CatchmentData[];
-  channels: unknown[];
+  channels: ChannelAlignment[];
   showVisualization?: boolean;
   onCatchmentUpdated?: (catchment: CatchmentData) => void;
   onCatchmentRemoved?: (catchmentId: string) => void;
   onChannelRemoved?: (channelId: string) => void;
 }
 
-export default function MapboxCatchmentDrawer({ 
-  onCatchmentAdded, 
-  onChannelAdded,
-  catchments,
-  channels,
-  // showVisualization = false,
-  // onCatchmentUpdated,
-  onCatchmentRemoved,
-  onChannelRemoved
-}: MapboxCatchmentDrawerProps) {
+export default function MapboxCatchmentDrawer(props: MapboxCatchmentDrawerProps) {
+  const { 
+    onCatchmentAdded, 
+    onChannelAdded,
+    catchments,
+    channels,
+    onCatchmentRemoved,
+    onChannelRemoved
+  } = props;
+
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<unknown>(null);
-  const draw = useRef<unknown>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const map = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const draw = useRef<any>(null);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [currentMode, setCurrentMode] = useState<string>('simple_select');
-  // const [isExtractingSlope, setIsExtractingSlope] = useState(false);
+  const [isExtractingSlope, setIsExtractingSlope] = useState(false);
   const [showToolsPopup, setShowToolsPopup] = useState(false);
   const [isMeasuring, setIsMeasuring] = useState(false);
   const [measurementPoints, setMeasurementPoints] = useState<number[][]>([]);
-  const [measurementResults, setMeasurementResults] = useState<unknown>(null);
+  const [measurementResults, setMeasurementResults] = useState<{
+    horizontalDistance: number;
+    elevationDiff: number;
+    gradient: number;
+    elevation1: number;
+    elevation2: number;
+  } | null>(null);
 
   // Surface type options (same as in existing code)
   // const SURFACE_TYPES = [
@@ -75,8 +86,9 @@ export default function MapboxCatchmentDrawer({
         MapboxDraw = drawModule.default;
         turf = turfModule;
 
-        // Check for access token
-        const MAPBOX_ACCESS_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+        // Check for access token with fallback
+        const MAPBOX_ACCESS_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || 
+          process.env.NEXT_PUBLIC_MAPBOXACCESSTOKEN;
         
         console.log('Environment check:', {
           hasToken: !!MAPBOX_ACCESS_TOKEN,
@@ -89,12 +101,10 @@ export default function MapboxCatchmentDrawer({
         }
 
         // Set Mapbox access token
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (mapboxgl as any).accessToken = MAPBOX_ACCESS_TOKEN;
+        mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
         // Initialize map with 3D terrain
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        map.current = new (mapboxgl as any).Map({
+        map.current = new mapboxgl.Map({
           container: mapContainer.current,
           style: 'mapbox://styles/mapbox/satellite-streets-v12', // Satellite view with streets
           center: [114.1694, 22.3193], // Hong Kong coordinates
@@ -105,14 +115,12 @@ export default function MapboxCatchmentDrawer({
         });
 
         // Add 3D terrain
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (map.current as any).on('load', () => {
+        map.current.on('load', () => {
           if (!map.current) return;
 
           try {
             // Add terrain source
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (map.current as any).addSource('mapbox-dem', {
+            map.current.addSource('mapbox-dem', {
               'type': 'raster-dem',
               'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
               'tileSize': 512,
@@ -120,12 +128,10 @@ export default function MapboxCatchmentDrawer({
             });
 
             // Set terrain
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (map.current as any).setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
+            map.current.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
 
             // Add sky layer for better 3D effect
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (map.current as any).addLayer({
+            map.current.addLayer({
               'id': 'sky',
               'type': 'sky',
               'paint': {
@@ -136,8 +142,7 @@ export default function MapboxCatchmentDrawer({
             });
 
             // Initialize Mapbox Draw
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            draw.current = new (MapboxDraw as any)({
+            draw.current = new MapboxDraw({
               displayControlsDefault: false,
               controls: {
                 polygon: true,
@@ -249,16 +254,12 @@ export default function MapboxCatchmentDrawer({
             });
 
             // Add draw control to map
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (map.current as any).addControl(draw.current);
+            map.current.addControl(draw.current);
 
             // Handle draw events
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (map.current as any).on('draw.create', handleDrawCreate);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (map.current as any).on('draw.update', handleDrawUpdate);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (map.current as any).on('draw.delete', handleDrawDelete);
+            map.current.on('draw.create', handleDrawCreate);
+            map.current.on('draw.update', handleDrawUpdate);
+            map.current.on('draw.delete', handleDrawDelete);
 
             setIsMapLoaded(true);
             setIsLoading(false);
@@ -270,8 +271,7 @@ export default function MapboxCatchmentDrawer({
         });
 
         // Handle map errors
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (map.current as any).on('error', (e: unknown) => {
+        map.current.on('error', (e: any) => {
           console.error('Map error:', e);
           setMapError('Map failed to load. Please check your internet connection and try again.');
           setIsLoading(false);
@@ -289,8 +289,7 @@ export default function MapboxCatchmentDrawer({
     // Cleanup
     return () => {
       if (map.current) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (map.current as any).remove();
+        map.current.remove();
         map.current = null;
       }
     };
@@ -316,8 +315,8 @@ export default function MapboxCatchmentDrawer({
       }));
 
       // Update the source with all current labels
-      if ((map.current as any).getSource('catchment-labels')) {
-        (map.current as any).getSource('catchment-labels').setData({
+      if (map.current.getSource('catchment-labels')) {
+        map.current.getSource('catchment-labels').setData({
           type: 'FeatureCollection',
           features: labelFeatures
         });
@@ -333,7 +332,7 @@ export default function MapboxCatchmentDrawer({
 
     try {
       // Update all channel labels
-      const channelLabelFeatures = channels.map((channel: any) => {
+      const channelLabelFeatures = channels.map((channel: ChannelAlignment) => {
         // Calculate midpoint along the line using Turf.js
         const coordinates = channel.coordinates;
         if (coordinates.length < 2) return null;
@@ -348,8 +347,8 @@ export default function MapboxCatchmentDrawer({
         };
         
         // Calculate the midpoint along the line
-        const lineLength = (turf as any).length(lineFeature, { units: 'meters' });
-        const midPoint = (turf as any).along(lineFeature, lineLength / 2, { units: 'meters' });
+        const lineLength = turf.length(lineFeature, { units: 'meters' });
+        const midPoint = turf.along(lineFeature, lineLength / 2, { units: 'meters' });
         
         return {
           type: 'Feature',
@@ -366,8 +365,8 @@ export default function MapboxCatchmentDrawer({
       }).filter(Boolean); // Remove null values
 
       // Update the source with all current channel labels
-      if ((map.current as any).getSource('channel-labels')) {
-        (map.current as any).getSource('channel-labels').setData({
+      if (map.current.getSource('channel-labels')) {
+        map.current.getSource('channel-labels').setData({
           type: 'FeatureCollection',
           features: channelLabelFeatures
         });
@@ -383,10 +382,10 @@ export default function MapboxCatchmentDrawer({
 
     try {
       // Get all current features from the map
-      const currentFeatures = (draw.current as any).getAll();
+      const currentFeatures = draw.current.getAll();
       
       // Find features that need to be removed (exist on map but not in catchments)
-      const featuresToRemove = currentFeatures.features.filter((feature: unknown) => {
+      const featuresToRemove = currentFeatures.features.filter((feature: any) => {
         if (feature.geometry.type === 'Polygon') {
           // Check if this polygon corresponds to a catchment that still exists
           const correspondingCatchment = catchments.find(c => 
@@ -398,7 +397,7 @@ export default function MapboxCatchmentDrawer({
       });
 
       // Remove features that no longer have corresponding catchments
-      featuresToRemove.forEach((feature: unknown) => {
+      featuresToRemove.forEach((feature: any) => {
         draw.current.delete(feature.id);
       });
 
@@ -407,57 +406,8 @@ export default function MapboxCatchmentDrawer({
     }
   }, [catchments, isMapLoaded]);
 
-  // Handle feature creation
-  const handleDrawCreate = useCallback(async (e: unknown) => {
-    const features = e.features;
-    for (const feature of features) {
-      if (feature.geometry.type === 'Polygon') {
-        await processPolygonFeature(feature);
-      } else if (feature.geometry.type === 'LineString') {
-        processLineFeature(feature);
-      }
-    }
-  }, [processPolygonFeature, processLineFeature]);
-
-  // Handle feature updates
-  const handleDrawUpdate = useCallback(async (e: unknown) => {
-    const features = e.features;
-    for (const feature of features) {
-      if (feature.geometry.type === 'Polygon') {
-        await processPolygonFeature(feature);
-      } else if (feature.geometry.type === 'LineString') {
-        processLineFeature(feature);
-      }
-    }
-  }, [processPolygonFeature, processLineFeature]);
-
-  // Handle feature deletion
-  const handleDrawDelete = useCallback((e: unknown) => {
-    const deletedFeatures = e.features;
-    
-    deletedFeatures.forEach((feature: unknown) => {
-      if (feature.geometry.type === 'Polygon') {
-        // Find and remove the corresponding catchment
-        const catchment = catchments.find(c => 
-          JSON.stringify(c.coordinates) === JSON.stringify(feature.geometry.coordinates[0])
-        );
-        if (catchment && onCatchmentRemoved) {
-          onCatchmentRemoved(catchment.id);
-        }
-      } else if (feature.geometry.type === 'LineString') {
-        // Find and remove the corresponding channel
-        const channel = channels.find(c => 
-          JSON.stringify(c.coordinates) === JSON.stringify(feature.geometry.coordinates)
-        );
-        if (channel && onChannelRemoved) {
-          onChannelRemoved(channel.id);
-        }
-      }
-    });
-  }, [catchments, channels, onCatchmentRemoved, onChannelRemoved]);
-
   // Calculate channel gradient from elevation data
-  const calculateChannelGradient = async (coordinates: number[][]) => {
+  const calculateChannelGradient = useCallback(async (coordinates: number[][]) => {
     if (!map.current || coordinates.length < 2) return 0.01; // Default 1% gradient
 
     try {
@@ -491,195 +441,10 @@ export default function MapboxCatchmentDrawer({
       console.error('Error calculating channel gradient:', error);
       return 0.01; // Default fallback
     }
-  };
-
-  // Extract slope from terrain data
-  const extractSlopeFromTerrain = async (coordinates: number[][]) => {
-    if (!map.current) return 5; // Default fallback
-
-    try {
-      // Sample points along the polygon boundary and interior
-      const samplePoints = [];
-      
-      // Sample boundary points
-      for (let i = 0; i < coordinates.length; i++) {
-        samplePoints.push(coordinates[i]);
-      }
-      
-      // Sample interior points using a grid
-      // const bbox = turf.bbox(turf.polygon([coordinates]));
-      const gridSize = 5; // Sample every 5 points for performance
-      
-      for (let i = 0; i < coordinates.length - 1; i += gridSize) {
-        const point = coordinates[i];
-        if (turf.booleanPointInPolygon(turf.point(point), turf.polygon([coordinates]))) {
-          samplePoints.push(point);
-        }
-      }
-      
-      // Get elevation data for sample points with coordinates
-      const elevationData = [];
-      for (const point of samplePoints) {
-        try {
-          // Query terrain elevation at each point
-          const elevation = await map.current.queryTerrainElevation(point);
-          if (elevation !== null && elevation !== undefined && !isNaN(elevation)) {
-            elevationData.push({
-              coordinates: point,
-              elevation: elevation
-            });
-          }
-        } catch (error) {
-          console.warn('Could not get elevation for point:', point, error);
-        }
-      }
-      
-      if (elevationData.length < 2) {
-        console.warn('Insufficient elevation data, using default slope');
-        return 5; // Default fallback
-      }
-      
-      // Find highest and lowest elevation points
-      const sortedByElevation = elevationData.sort((a, b) => a.elevation - b.elevation);
-      const lowestPoint = sortedByElevation[0];
-      const highestPoint = sortedByElevation[sortedByElevation.length - 1];
-      
-      // Calculate elevation range (rise)
-      const elevationRange = highestPoint.elevation - lowestPoint.elevation;
-      
-      // Calculate horizontal distance between highest and lowest points (run)
-      const horizontalDistance = turf.distance(
-        turf.point(lowestPoint.coordinates), 
-        turf.point(highestPoint.coordinates), 
-        { units: 'meters' }
-      );
-      
-      // Calculate slope (rise over run)
-      const slope = (elevationRange / horizontalDistance) * 100; // Convert to m per 100m
-      
-      // Clamp to reasonable range (0.1 to 50 m per 100m)
-      const finalSlope = Math.max(0.1, Math.min(50, slope));
-      
-      console.log(`Slope extraction: elevation range ${elevationRange.toFixed(2)}m, horizontal distance ${horizontalDistance.toFixed(2)}m, slope ${finalSlope.toFixed(2)} m/100m`);
-      console.log(`Highest point: ${highestPoint.elevation.toFixed(2)}m at [${highestPoint.coordinates[0].toFixed(6)}, ${highestPoint.coordinates[1].toFixed(6)}]`);
-      console.log(`Lowest point: ${lowestPoint.elevation.toFixed(2)}m at [${lowestPoint.coordinates[0].toFixed(6)}, ${lowestPoint.coordinates[1].toFixed(6)}]`);
-      
-      return finalSlope;
-      
-    } catch (error) {
-      console.error('Error extracting slope from terrain:', error);
-      return 5; // Default fallback
-    }
-  };
-
-  // Calculate flow path length from highest point to lowest point (outlet)
-  const calculateFlowPathLength = async (coordinates: number[][]) => {
-    try {
-      // Get elevation data for all polygon boundary points
-      const elevationData = [];
-      for (const coord of coordinates) {
-        try {
-          const elevation = await map.current.queryTerrainElevation(coord);
-          if (elevation !== null && elevation !== undefined && !isNaN(elevation)) {
-            elevationData.push({
-              coordinates: coord,
-              elevation: elevation
-            });
-          }
-        } catch (error) {
-          console.warn('Could not get elevation for point:', coord, error);
-        }
-      }
-      
-      if (elevationData.length < 2) {
-        console.warn('Insufficient elevation data for flow path calculation, using default');
-        return 200; // Default fallback
-      }
-      
-      // Find highest and lowest elevation points (outlet)
-      const sortedByElevation = elevationData.sort((a, b) => a.elevation - b.elevation);
-      const lowestPoint = sortedByElevation[0]; // This is the outlet
-      const highestPoint = sortedByElevation[sortedByElevation.length - 1];
-      
-      // Calculate actual distance from highest point to outlet (lowest point)
-      const flowPathLength = turf.distance(
-        turf.point(highestPoint.coordinates), 
-        turf.point(lowestPoint.coordinates), 
-        { units: 'meters' }
-      );
-      
-      const roundedFlowPathLength = Math.round(flowPathLength);
-      
-      console.log(`Flow path calculation: from highest point (${highestPoint.elevation.toFixed(2)}m) to outlet (${lowestPoint.elevation.toFixed(2)}m)`);
-      console.log(`Flow path length: ${roundedFlowPathLength}m`);
-      console.log(`Outlet coordinates: [${lowestPoint.coordinates[0].toFixed(6)}, ${lowestPoint.coordinates[1].toFixed(6)}]`);
-      
-      return roundedFlowPathLength;
-    } catch (error) {
-      console.error('Error calculating flow path length:', error);
-      return 200; // Default fallback
-    }
-  };
-
-  // Process a polygon feature and create catchment data
-  const processPolygonFeature = useCallback(async (feature: unknown) => {
-    try {
-      setIsExtractingSlope(true);
-      
-      // Calculate area using Turf.js
-      const area = turf.area(feature); // Returns area in square meters
-      
-      // Calculate centroid
-      const centroid = turf.centroid(feature);
-      const center: [number, number] = centroid.geometry.coordinates as [number, number];
-      
-      // Extract coordinates
-      const coordinates = feature.geometry.coordinates[0]; // First ring of polygon
-      
-      // Generate unique ID
-      const id = `catchment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
-      // Extract slope from terrain (async operation)
-      const averageSlope = await extractSlopeFromTerrain(coordinates);
-      
-      // Calculate flow path length (async operation)
-      const flowPathLength = await calculateFlowPathLength(coordinates);
-      
-      // Create catchment data with extracted values
-      const catchment: CatchmentData = {
-        id,
-        name: `Catchment ${catchments.length + 1}`,
-        coordinates,
-        area: Math.round(area), // Round to nearest square meter
-        center,
-        
-        // Extracted catchment properties
-        averageSlope: Math.round(averageSlope * 10) / 10, // Round to 1 decimal place
-        flowPathLength: flowPathLength,
-        surfaceType: "asphalt", // Default to asphalt/concrete
-        runoffCoefficient: 0.9, // Default coefficient for asphalt
-        
-        // Default rainfall properties
-        returnPeriod: 10, // years
-        useIDF: true,
-      };
-      
-      // Call the callback to add the catchment
-      onCatchmentAdded(catchment);
-      
-      // Add catchment name label to the map
-      addCatchmentLabel(catchment);
-      
-    } catch (error) {
-      console.error("Error processing polygon feature:", error);
-      alert("Error processing the drawn polygon. Please try again.");
-    } finally {
-      setIsExtractingSlope(false);
-    }
-  }, [onCatchmentAdded, addCatchmentLabel, catchments.length]);
+  }, []);
 
   // Add catchment name label to the map
-  const addCatchmentLabel = (catchment: CatchmentData) => {
+  const addCatchmentLabel = useCallback((catchment: CatchmentData) => {
     if (!map.current) return;
 
     try {
@@ -763,7 +528,7 @@ export default function MapboxCatchmentDrawer({
 
       // Update the source with new label
       const currentFeatures = map.current.getSource('catchment-labels')._data.features || [];
-      (map.current as any).getSource('catchment-labels').setData({
+      map.current.getSource('catchment-labels').setData({
         type: 'FeatureCollection',
         features: [...currentFeatures, labelPoint]
       });
@@ -771,30 +536,197 @@ export default function MapboxCatchmentDrawer({
     } catch (error) {
       console.error('Error adding catchment label:', error);
     }
-  };
+  }, []);
 
-  // Remove catchment label from the map
-  // const removeCatchmentLabel = (catchmentId: string) => {
-  //   if (!map.current || !map.current.getSource('catchment-labels')) return;
+  // Extract slope from terrain data
+  const extractSlopeFromTerrain = useCallback(async (coordinates: number[][]) => {
+    if (!map.current) return 5; // Default fallback
 
-  //   try {
-  //     const currentFeatures = map.current.getSource('catchment-labels')._data.features || [];
-  //     const filteredFeatures = currentFeatures.filter((feature: unknown) => feature.properties.id !== catchmentId);
+    try {
+      // Sample points along the polygon boundary and interior
+      const samplePoints = [];
       
-  //     (map.current as any).getSource('catchment-labels').setData({
-  //       type: 'FeatureCollection',
-  //       features: filteredFeatures
-  //     });
-  //   } catch (error) {
-  //     console.error('Error removing catchment label:', error);
-  //   }
-  // };
+      // Sample boundary points
+      for (let i = 0; i < coordinates.length; i++) {
+        samplePoints.push(coordinates[i]);
+      }
+      
+      // Sample interior points using a grid
+      const gridSize = 5; // Sample every 5 points for performance
+      
+      for (let i = 0; i < coordinates.length - 1; i += gridSize) {
+        const point = coordinates[i];
+        if (turf.booleanPointInPolygon(turf.point(point), turf.polygon([coordinates]))) {
+          samplePoints.push(point);
+        }
+      }
+      
+      // Get elevation data for sample points with coordinates
+      const elevationData = [];
+      for (const point of samplePoints) {
+        try {
+          // Query terrain elevation at each point
+          const elevation = await map.current.queryTerrainElevation(point);
+          if (elevation !== null && elevation !== undefined && !isNaN(elevation)) {
+            elevationData.push({
+              coordinates: point,
+              elevation: elevation
+            });
+          }
+        } catch (error) {
+          console.warn('Could not get elevation for point:', point, error);
+        }
+      }
+      
+      if (elevationData.length < 2) {
+        console.warn('Insufficient elevation data, using default slope');
+        return 5; // Default fallback
+      }
+      
+      // Find highest and lowest elevation points
+      const sortedByElevation = elevationData.sort((a, b) => a.elevation - b.elevation);
+      const lowestPoint = sortedByElevation[0];
+      const highestPoint = sortedByElevation[sortedByElevation.length - 1];
+      
+      // Calculate elevation range (rise)
+      const elevationRange = highestPoint.elevation - lowestPoint.elevation;
+      
+      // Calculate horizontal distance between highest and lowest points (run)
+      const horizontalDistance = turf.distance(
+        turf.point(lowestPoint.coordinates), 
+        turf.point(highestPoint.coordinates), 
+        { units: 'meters' }
+      );
+      
+      // Calculate slope (rise over run)
+      const slope = (elevationRange / horizontalDistance) * 100; // Convert to m per 100m
+      
+      // Clamp to reasonable range (0.1 to 50 m per 100m)
+      const finalSlope = Math.max(0.1, Math.min(50, slope));
+      
+      console.log(`Slope extraction: elevation range ${elevationRange.toFixed(2)}m, horizontal distance ${horizontalDistance.toFixed(2)}m, slope ${finalSlope.toFixed(2)} m/100m`);
+      console.log(`Highest point: ${highestPoint.elevation.toFixed(2)}m at [${highestPoint.coordinates[0].toFixed(6)}, ${highestPoint.coordinates[1].toFixed(6)}]`);
+      console.log(`Lowest point: ${lowestPoint.elevation.toFixed(2)}m at [${lowestPoint.coordinates[0].toFixed(6)}, ${lowestPoint.coordinates[1].toFixed(6)}]`);
+      
+      return finalSlope;
+      
+    } catch (error) {
+      console.error('Error extracting slope from terrain:', error);
+      return 5; // Default fallback
+    }
+  }, []);
+
+  // Calculate flow path length from highest point to lowest point (outlet)
+  const calculateFlowPathLength = useCallback(async (coordinates: number[][]) => {
+    try {
+      // Get elevation data for all polygon boundary points
+      const elevationData = [];
+      for (const coord of coordinates) {
+        try {
+          const elevation = await map.current.queryTerrainElevation(coord);
+          if (elevation !== null && elevation !== undefined && !isNaN(elevation)) {
+            elevationData.push({
+              coordinates: coord,
+              elevation: elevation
+            });
+          }
+        } catch (error) {
+          console.warn('Could not get elevation for point:', coord, error);
+        }
+      }
+      
+      if (elevationData.length < 2) {
+        console.warn('Insufficient elevation data for flow path calculation, using default');
+        return 200; // Default fallback
+      }
+      
+      // Find highest and lowest elevation points (outlet)
+      const sortedByElevation = elevationData.sort((a, b) => a.elevation - b.elevation);
+      const lowestPoint = sortedByElevation[0]; // This is the outlet
+      const highestPoint = sortedByElevation[sortedByElevation.length - 1];
+      
+      // Calculate actual distance from highest point to outlet (lowest point)
+      const flowPathLength = turf.distance(
+        turf.point(highestPoint.coordinates), 
+        turf.point(lowestPoint.coordinates), 
+        { units: 'meters' }
+      );
+      
+      const roundedFlowPathLength = Math.round(flowPathLength);
+      
+      console.log(`Flow path calculation: from highest point (${highestPoint.elevation.toFixed(2)}m) to outlet (${lowestPoint.elevation.toFixed(2)}m)`);
+      console.log(`Flow path length: ${roundedFlowPathLength}m`);
+      console.log(`Outlet coordinates: [${lowestPoint.coordinates[0].toFixed(6)}, ${lowestPoint.coordinates[1].toFixed(6)}]`);
+      
+      return roundedFlowPathLength;
+    } catch (error) {
+      console.error('Error calculating flow path length:', error);
+      return 200; // Default fallback
+    }
+  }, []);
+
+  // Process a polygon feature and create catchment data
+  const processPolygonFeature = useCallback(async (feature: any) => {
+    try {
+      setIsExtractingSlope(true);
+      
+      // Calculate area using Turf.js
+      const area = turf.area(feature); // Returns area in square meters
+      
+      // Calculate centroid
+      const centroid = turf.centroid(feature);
+      const center: [number, number] = centroid.geometry.coordinates as [number, number];
+      
+      // Extract coordinates
+      const coordinates = feature.geometry.coordinates[0]; // First ring of polygon
+      
+      // Generate unique ID
+      const id = `catchment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Extract slope from terrain (async operation)
+      const averageSlope = await extractSlopeFromTerrain(coordinates);
+      
+      // Calculate flow path length (async operation)
+      const flowPathLength = await calculateFlowPathLength(coordinates);
+      
+      // Create catchment data with extracted values
+      const catchment: CatchmentData = {
+        id,
+        name: `Catchment ${catchments.length + 1}`,
+        coordinates,
+        area: Math.round(area), // Round to nearest square meter
+        center,
+        
+        // Extracted catchment properties
+        averageSlope: Math.round(averageSlope * 10) / 10, // Round to 1 decimal place
+        flowPathLength: flowPathLength,
+        surfaceType: "asphalt", // Default to asphalt/concrete
+        runoffCoefficient: 0.9, // Default coefficient for asphalt
+        
+        // Default rainfall properties
+        returnPeriod: 10, // years
+        useIDF: true,
+      };
+      
+      // Call the callback to add the catchment
+      onCatchmentAdded(catchment);
+      
+      // Add catchment name label to the map
+      addCatchmentLabel(catchment);
+      
+    } catch (error) {
+      console.error("Error processing polygon feature:", error);
+      alert("Error processing the drawn polygon. Please try again.");
+    } finally {
+      setIsExtractingSlope(false);
+    }
+  }, [onCatchmentAdded, addCatchmentLabel, catchments.length, extractSlopeFromTerrain, calculateFlowPathLength]);
 
   // Process a line feature for channel alignment
-  const processLineFeature = useCallback(async (feature: unknown) => {
+  const processLineFeature = useCallback(async (feature: any) => {
     try {
       // Calculate line length using Turf.js
-      const length = (turf as any).length(feature, { units: 'meters' });
+      const length = turf.length(feature, { units: 'meters' });
       
       // Get line coordinates
       const coordinates = feature.geometry.coordinates;
@@ -806,7 +738,7 @@ export default function MapboxCatchmentDrawer({
       const calculatedGradient = await calculateChannelGradient(coordinates);
       
       // Create channel data
-      const channel = {
+      const channel: ChannelAlignment = {
         id,
         name: `Channel ${channels.length + 1}`,
         coordinates,
@@ -823,7 +755,6 @@ export default function MapboxCatchmentDrawer({
         upstreamChannels: []
       };
       
-      // Add to channels state
       // Call the callback to add the channel
       onChannelAdded(channel);
       
@@ -834,6 +765,55 @@ export default function MapboxCatchmentDrawer({
       alert("Error processing the drawn line. Please try again.");
     }
   }, [onChannelAdded, calculateChannelGradient, channels.length]);
+
+  // Handle feature creation
+  const handleDrawCreate = useCallback(async (e: any) => {
+    const features = e.features;
+    for (const feature of features) {
+      if (feature.geometry.type === 'Polygon') {
+        await processPolygonFeature(feature);
+      } else if (feature.geometry.type === 'LineString') {
+        processLineFeature(feature);
+      }
+    }
+  }, [processPolygonFeature, processLineFeature]);
+
+  // Handle feature updates
+  const handleDrawUpdate = useCallback(async (e: any) => {
+    const features = e.features;
+    for (const feature of features) {
+      if (feature.geometry.type === 'Polygon') {
+        await processPolygonFeature(feature);
+      } else if (feature.geometry.type === 'LineString') {
+        processLineFeature(feature);
+      }
+    }
+  }, [processPolygonFeature, processLineFeature]);
+
+  // Handle feature deletion
+  const handleDrawDelete = useCallback((e: any) => {
+    const deletedFeatures = e.features;
+    
+    deletedFeatures.forEach((feature: any) => {
+      if (feature.geometry.type === 'Polygon') {
+        // Find and remove the corresponding catchment
+        const catchment = catchments.find(c => 
+          JSON.stringify(c.coordinates) === JSON.stringify(feature.geometry.coordinates[0])
+        );
+        if (catchment && onCatchmentRemoved) {
+          onCatchmentRemoved(catchment.id);
+        }
+      } else if (feature.geometry.type === 'LineString') {
+        // Find and remove the corresponding channel
+        const channel = channels.find(c => 
+          JSON.stringify(c.coordinates) === JSON.stringify(feature.geometry.coordinates)
+        );
+        if (channel && onChannelRemoved) {
+          onChannelRemoved(channel.id);
+        }
+      }
+    });
+  }, [catchments, channels, onCatchmentRemoved, onChannelRemoved]);
 
   // Toolbar functions
   const setDrawingMode = (mode: string) => {
@@ -1070,7 +1050,7 @@ export default function MapboxCatchmentDrawer({
   };
 
   // Handle click for measuring
-  const handleMeasureClick = async (e: unknown) => {
+  const handleMeasureClick = async (e: any) => {
     if (!isMeasuring || !map.current) return;
 
     const newPoint = [e.lngLat.lng, e.lngLat.lat];
@@ -1203,8 +1183,8 @@ export default function MapboxCatchmentDrawer({
 
   const clearCatchments = () => {
     if (draw.current) {
-      const features = (draw.current as any).getAll();
-      features.features.forEach((feature: unknown) => {
+      const features = draw.current.getAll();
+      features.features.forEach((feature: any) => {
         if (feature.geometry.type === 'Polygon') {
           draw.current.delete(feature.id);
         }
@@ -1221,8 +1201,8 @@ export default function MapboxCatchmentDrawer({
 
   const clearChannels = () => {
     if (draw.current) {
-      const features = (draw.current as any).getAll();
-      features.features.forEach((feature: unknown) => {
+      const features = draw.current.getAll();
+      features.features.forEach((feature: any) => {
         if (feature.geometry.type === 'LineString') {
           draw.current.delete(feature.id);
         }
@@ -1246,7 +1226,7 @@ export default function MapboxCatchmentDrawer({
       {mapError && (
         <div className="absolute inset-0 bg-red-50 flex items-center justify-center">
           <div className="text-center p-6 max-w-md">
-            <div className="text-red-600 text-4xl mb-4">⚠️</div>
+            <div className="text-red-600 text-4xl mb-4">{'⚠️'}</div>
             <h3 className="font-semibold text-red-800 mb-2">Map Loading Error</h3>
             <p className="text-red-600 text-sm mb-4">{mapError}</p>
             <div className="space-y-2 text-xs text-red-500">
@@ -1288,9 +1268,9 @@ export default function MapboxCatchmentDrawer({
             title="Drawing Tools"
           >
             <div className="flex items-center gap-2">
-              <span className="text-lg">🛠️</span>
+              <span className="text-lg">{'🛠️'}</span>
               <span className="text-sm font-medium">Tools</span>
-              <span className={`text-xs transition-transform ${showToolsPopup ? 'rotate-180' : ''}`}>▼</span>
+              <span className={`text-xs transition-transform ${showToolsPopup ? 'rotate-180' : ''}`}>{'▼'}</span>
             </div>
           </button>
         </div>
@@ -1305,7 +1285,7 @@ export default function MapboxCatchmentDrawer({
               onClick={() => setShowToolsPopup(false)}
               className="text-gray-400 hover:text-gray-600"
             >
-              ✕
+              {'✕'}
             </button>
           </div>
           
@@ -1319,7 +1299,7 @@ export default function MapboxCatchmentDrawer({
                   : 'hover:bg-gray-100 text-gray-700'
               }`}
             >
-              <span className="mr-2">🖱️</span>
+              <span className="mr-2">{'🖱️'}</span>
               Select/Move
             </button>
             
@@ -1331,7 +1311,7 @@ export default function MapboxCatchmentDrawer({
                   : 'hover:bg-gray-100 text-gray-700'
               }`}
             >
-              <span className="mr-2">📐</span>
+              <span className="mr-2">{'📐'}</span>
               Draw Catchment
             </button>
             
@@ -1343,7 +1323,7 @@ export default function MapboxCatchmentDrawer({
                   : 'hover:bg-gray-100 text-gray-700'
               }`}
             >
-              <span className="mr-2">📏</span>
+              <span className="mr-2">{'📏'}</span>
               Draw Channel
             </button>
             
@@ -1355,7 +1335,7 @@ export default function MapboxCatchmentDrawer({
                   : 'hover:bg-gray-100 text-gray-700'
               }`}
             >
-              <span className="mr-2">📐</span>
+              <span className="mr-2">{'📐'}</span>
               {isMeasuring ? 'Stop Measuring' : 'Measure Line'}
             </button>
           </div>
@@ -1368,19 +1348,19 @@ export default function MapboxCatchmentDrawer({
                 onClick={clearCatchments}
                 className="w-full text-left px-2 py-1 rounded text-xs hover:bg-orange-50 text-orange-600"
               >
-                🗑️ Clear Catchments
+                {'🗑️'} Clear Catchments
               </button>
               <button
                 onClick={clearChannels}
                 className="w-full text-left px-2 py-1 rounded text-xs hover:bg-orange-50 text-orange-600"
               >
-                🗑️ Clear Channels
+                {'🗑️'} Clear Channels
               </button>
               <button
                 onClick={clearAllFeatures}
                 className="w-full text-left px-2 py-1 rounded text-xs hover:bg-red-50 text-red-600"
               >
-                🗑️ Clear All
+                {'🗑️'} Clear All
               </button>
             </div>
           </div>
@@ -1394,13 +1374,13 @@ export default function MapboxCatchmentDrawer({
                 className="w-full text-left px-2 py-1 rounded text-xs hover:bg-blue-50 text-blue-600"
                 disabled={catchments.length === 0}
               >
-                📏 Show Slope & Flow Path Lines
+                {'📏'} Show Slope & Flow Path Lines
               </button>
               <button
                 onClick={clearVisualizationLines}
                 className="w-full text-left px-2 py-1 rounded text-xs hover:bg-gray-50 text-gray-600"
               >
-                🚫 Hide Lines
+                {'🚫'} Hide Lines
               </button>
             </div>
           </div>
