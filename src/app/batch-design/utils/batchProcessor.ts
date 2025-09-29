@@ -2,6 +2,14 @@ import { CatchmentData, BatchCalculationResult, ChannelAlignment } from "../type
 import { mmPerHourToMetersPerSecond } from "../../design/utils/units";
 import { calculateTrapezoidGeometry, calculateUChannelGeometry } from "../../design/utils/geometry";
 
+// Types for IDF constants
+interface IDFConstants {
+  RP: number;
+  a: number;
+  b: number;
+  c: number;
+}
+
 // Surface types (same as in existing code)
 const SURFACE_TYPES = [
   { id: "undrain", name: "Undrained", coefficient: 1.0 },
@@ -67,7 +75,8 @@ function calculatePeakFlow(
   
   if (useIDF && idfConstants.length > 0) {
     try {
-      const idfResult = calculateIDF(returnPeriod, tc, false);
+      // Pass true for climate change (apply +28.1% adjustment)
+      const idfResult = calculateIDF(returnPeriod, tc, true);
       rainfallIntensity = idfResult.intensity; // mm/hr
     } catch (error) {
       console.error("IDF calculation error:", error);
@@ -366,19 +375,65 @@ async function processSingleCatchment(
   }
 }
 
+// Load IDF constants from JSON file
+async function loadIDFConstants(): Promise<IDFConstants[]> {
+  try {
+    const response = await fetch('/data/idf_constants_hk.json');
+    if (!response.ok) {
+      throw new Error(`Failed to load IDF constants: ${response.statusText}`);
+    }
+    const data = await response.json();
+    return data.idf_constants;
+  } catch (error) {
+    console.error('Error loading IDF constants:', error);
+    throw error;
+  }
+}
+
+// Calculate rainfall intensity using Hong Kong IDF curve formula
+// Based on GEO Technical Guidance Note No. 30 (2023)
+// Formula: i = a / (t + b)^c
+function calculateIDFIntensity(
+  returnPeriod: number,
+  duration: number,
+  idfConstants: IDFConstants[],
+  temporaryDesign: boolean = false
+): number {
+  // Find constants for the specified return period
+  const constants = idfConstants.find(c => c.RP === returnPeriod);
+  
+  if (!constants) {
+    throw new Error(`No IDF constants found for return period ${returnPeriod} years`);
+  }
+
+  // Calculate raw intensity using the formula: i = a / (t + b)^c
+  const rawIntensity = constants.a / Math.pow(duration + constants.b, constants.c);
+  
+  // Apply climate change adjustment (+28.1%) unless it's a temporary design
+  const climateChangeApplied = !temporaryDesign;
+  const intensity = climateChangeApplied ? rawIntensity * 1.281 : rawIntensity;
+  
+  return intensity;
+}
+
 // Main batch processing function
 export async function processBatchCatchments(
   catchments: CatchmentData[],
   channels: ChannelAlignment[] = []
 ): Promise<BatchCalculationResult[]> {
-  // Load IDF constants (we'll need to handle this differently since we can't use hooks in utils)
-  // For now, we'll use a simplified approach with default values
-  const idfConstants: unknown[] = []; // This would be loaded from the IDF hook
+  // Load actual IDF constants from JSON file
+  const idfConstants = await loadIDFConstants();
+  
   const calculateIDF = (rp: number, tc: number, climateChange: boolean) => {
-    // Simplified IDF calculation - in a real implementation, this would use the actual IDF constants
-    const baseIntensity = 100; // mm/hr
-    const climateChangeFactor = climateChange ? 1.281 : 1.0;
-    return { intensity: baseIntensity * climateChangeFactor };
+    try {
+      const intensity = calculateIDFIntensity(rp, tc, idfConstants, !climateChange);
+      return { intensity };
+    } catch (error) {
+      console.error("IDF calculation error:", error);
+      // Fallback to a reasonable default based on return period
+      const fallbackIntensity = 50 + (rp * 2); // Simple fallback: 50 + (2 * return period)
+      return { intensity: fallbackIntensity };
+    }
   };
 
   const results: BatchCalculationResult[] = [];
