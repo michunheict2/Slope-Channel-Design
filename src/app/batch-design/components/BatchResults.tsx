@@ -43,6 +43,11 @@ export default function BatchResults({ results, channels = [] }: BatchResultsPro
       'Required Width (m)',
       'Selected Width (m)',
       'Selected Size',
+      'Channel Shape',
+      'Top Width (m)',
+      'Bottom Width (m)',
+      'Channel Depth (m)',
+      'Side Slope',
       'Calculated Flow (m³/s)',
       'Velocity (m/s)',
       'Design Status',
@@ -65,6 +70,11 @@ export default function BatchResults({ results, channels = [] }: BatchResultsPro
         result.requiredChannelWidth.toFixed(3),
         result.selectedChannelWidth.toFixed(3),
         `"${result.selectedChannelSize}"`,
+        result.channelShape || 'trapezoidal',
+        (result.channelTopWidth || result.selectedChannelWidth).toFixed(3),
+        (result.channelBottomWidth || 0.5).toFixed(3),
+        (result.channelDepth || ((result.selectedChannelWidth - 0.5) / 4)).toFixed(3),
+        result.channelSideSlope || 2,
         result.calculatedFlow.toFixed(3),
         result.velocity.toFixed(2),
         result.status,
@@ -248,6 +258,7 @@ export default function BatchResults({ results, channels = [] }: BatchResultsPro
                   <th className="text-left p-2">Catchment</th>
                   <th className="text-left p-2">Peak Flow</th>
                   <th className="text-left p-2">Channel Size</th>
+                  <th className="text-left p-2">Channel Dimensions</th>
                   <th className="text-left p-2">Velocity</th>
                   <th className="text-left p-2">Status</th>
                   <th className="text-left p-2">Issues</th>
@@ -272,6 +283,30 @@ export default function BatchResults({ results, channels = [] }: BatchResultsPro
                       <div>
                         <p className="font-medium">{result.selectedChannelSize}</p>
                         <p className="text-xs text-muted-foreground">{result.selectedChannelWidth.toFixed(3)} m</p>
+                      </div>
+                    </td>
+                    <td className="p-2">
+                      <div>
+                        {result.channelShape === "trapezoidal" ? (
+                          <>
+                            <p className="font-medium text-blue-800">
+                              Top Width: {result.channelTopWidth ? result.channelTopWidth.toFixed(2) : result.selectedChannelWidth.toFixed(2)}m
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Bottom Width: {result.channelBottomWidth ? result.channelBottomWidth.toFixed(2) : '0.50'}m
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Depth: {result.channelDepth ? result.channelDepth.toFixed(2) : ((result.selectedChannelWidth - 0.5) / 4).toFixed(2)}m
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="font-medium text-gray-600">U-Channel</p>
+                            <p className="text-xs text-muted-foreground">
+                              Diameter: {result.selectedChannelWidth.toFixed(2)}m
+                            </p>
+                          </>
+                        )}
                       </div>
                     </td>
                     <td className="p-2">
