@@ -39,7 +39,7 @@ export interface MapControls {
  * Interface for map hook return value
  */
 export interface UseMapboxMapReturn {
-  mapContainer: React.RefObject<HTMLDivElement>;
+  mapContainer: React.RefObject<HTMLDivElement | null>;
   map: React.RefObject<any>;
   draw: React.RefObject<any>;
   mapState: MapState;
