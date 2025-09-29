@@ -278,29 +278,29 @@ export default function BatchDetailedCalculations({ results, channels = [] }: Ba
                       </div>
 
                       {/* Detailed Channel Dimensions (for trapezoidal channels) */}
-                      {result.channelShape === "trapezoidal" && result.channelTopWidth && result.channelBottomWidth && result.channelDepth && (
+                      {result.channelShape === "trapezoidal" && (
                         <div className="bg-blue-50 p-4 rounded-lg">
                           <h5 className="font-medium text-blue-900 mb-3">📐 Channel Dimensions</h5>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div className="bg-white p-3 rounded border">
                               <h6 className="font-medium text-sm text-gray-700 mb-1">Top Width</h6>
-                              <p className="text-lg font-bold text-blue-800">{formatNumber(result.channelTopWidth, 3)} m</p>
+                              <p className="text-lg font-bold text-blue-800">{formatNumber(result.channelTopWidth || result.selectedChannelWidth, 3)} m</p>
                             </div>
                             <div className="bg-white p-3 rounded border">
                               <h6 className="font-medium text-sm text-gray-700 mb-1">Bottom Width</h6>
-                              <p className="text-lg font-bold text-blue-800">{formatNumber(result.channelBottomWidth, 3)} m</p>
+                              <p className="text-lg font-bold text-blue-800">{formatNumber(result.channelBottomWidth || 0.5, 3)} m</p>
                             </div>
                             <div className="bg-white p-3 rounded border">
                               <h6 className="font-medium text-sm text-gray-700 mb-1">Channel Depth</h6>
-                              <p className="text-lg font-bold text-blue-800">{formatNumber(result.channelDepth, 3)} m</p>
+                              <p className="text-lg font-bold text-blue-800">{formatNumber(result.channelDepth || ((result.selectedChannelWidth - 0.5) / 4), 3)} m</p>
                             </div>
                             <div className="bg-white p-3 rounded border">
                               <h6 className="font-medium text-sm text-gray-700 mb-1">Side Slope</h6>
-                              <p className="text-lg font-bold text-blue-800">1:{result.channelSideSlope}</p>
+                              <p className="text-lg font-bold text-blue-800">1:{result.channelSideSlope || 2}</p>
                             </div>
                           </div>
                           <div className="mt-3 text-xs text-blue-600">
-                            <p>• Side slope: {result.channelSideSlope}:1 (Horizontal:Vertical)</p>
+                            <p>• Side slope: {result.channelSideSlope || 2}:1 (Horizontal:Vertical)</p>
                             <p>• Top width = Bottom width + 2 × Side slope × Depth</p>
                           </div>
                         </div>
