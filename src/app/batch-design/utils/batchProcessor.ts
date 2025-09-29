@@ -294,13 +294,29 @@ async function processSingleCatchment(
       velocityWarning = `Velocity higher than 4.0 m/s (${velocity.toFixed(2)} m/s)`;
     }
 
-    // Get geometry details for Manning's equation
+    // Get geometry details for Manning's equation and channel dimensions
     let geometry: { area: number; perimeter: number; hydraulicRadius: number };
+    let channelDimensions: {
+      channelTopWidth?: number;
+      channelBottomWidth?: number;
+      channelDepth?: number;
+      channelSideSlope?: number;
+    } = {};
+    
     if (channelProperties.channelShape === "trapezoidal") {
       const bottomWidth = 0.5;
       const sideSlope = 2.0;
       const depth = (widthResult.selectedWidth - bottomWidth) / (2 * sideSlope);
       geometry = calculateTrapezoidGeometry(depth, bottomWidth, sideSlope);
+      
+      // Calculate detailed dimensions for trapezoidal channel
+      const topWidth = bottomWidth + 2 * sideSlope * depth;
+      channelDimensions = {
+        channelTopWidth: topWidth,
+        channelBottomWidth: bottomWidth,
+        channelDepth: depth,
+        channelSideSlope: sideSlope
+      };
     } else {
       const radius = widthResult.selectedWidth / 2;
       const flowDepth = widthResult.selectedWidth;
@@ -339,6 +355,9 @@ async function processSingleCatchment(
       channelGradient: channelProperties.channelGradient,
       channelShape: channelProperties.channelShape,
       channelMaterial: channelProperties.channelMaterial,
+      
+      // Detailed channel dimensions (for trapezoidal channels)
+      ...channelDimensions,
       
       // Processing status
       processed: true,

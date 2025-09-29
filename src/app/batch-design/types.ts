@@ -103,6 +103,16 @@ export interface BatchCalculationResult {
   channelShape?: "trapezoidal" | "u-channel";
   /** Channel material */
   channelMaterial?: string;
+  
+  // Detailed channel dimensions (for trapezoidal channels)
+  /** Channel top width in meters */
+  channelTopWidth?: number;
+  /** Channel bottom width in meters */
+  channelBottomWidth?: number;
+  /** Channel depth in meters */
+  channelDepth?: number;
+  /** Channel side slope (horizontal:vertical ratio) */
+  channelSideSlope?: number;
 }
 
 /**
