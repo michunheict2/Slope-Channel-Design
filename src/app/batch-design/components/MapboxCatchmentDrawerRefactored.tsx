@@ -105,10 +105,10 @@ export default function MapboxCatchmentDrawer(props: MapboxCatchmentDrawerProps)
     draw,
     mapState,
     mapControls,
-    setMapState
+    setMapState: _setMapState
   } = useMapboxMap(
     // onMapReady callback
-    (mapInstance, drawInstance) => {
+    (_mapInstance, _drawInstance) => {
       console.log('Map initialized successfully');
     },
     // onDrawCreate callback

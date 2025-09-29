@@ -92,11 +92,12 @@ export default function MapboxCatchmentDrawer(props: MapboxCatchmentDrawerProps)
         const MAPBOX_ACCESS_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || 
           process.env.NEXT_PUBLIC_MAPBOXACCESSTOKEN;
         
-        console.log('Environment check:', {
-          hasToken: !!MAPBOX_ACCESS_TOKEN,
-          tokenLength: MAPBOX_ACCESS_TOKEN?.length || 0,
-          tokenStart: MAPBOX_ACCESS_TOKEN?.substring(0, 10) || 'none'
-        });
+        // Environment check for debugging
+        // console.log('Environment check:', {
+        //   hasToken: !!MAPBOX_ACCESS_TOKEN,
+        //   tokenLength: MAPBOX_ACCESS_TOKEN?.length || 0,
+        //   tokenStart: MAPBOX_ACCESS_TOKEN?.substring(0, 10) || 'none'
+        // });
         
         if (!MAPBOX_ACCESS_TOKEN) {
           throw new Error('Mapbox access token not found. Please set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN in your environment variables.');
@@ -1025,7 +1026,7 @@ export default function MapboxCatchmentDrawer(props: MapboxCatchmentDrawerProps)
 
   // Start line measuring mode
   const startLineMeasuring = () => {
-    console.log('Starting line measuring mode...');
+    // console.log('Starting line measuring mode...');
     setIsMeasuring(true);
     isMeasuringRef.current = true;
     setMeasurementPoints([]);
@@ -1044,7 +1045,7 @@ export default function MapboxCatchmentDrawer(props: MapboxCatchmentDrawerProps)
       map.current.off('click', handleMeasureClick);
       map.current.on('click', handleMeasureClick);
       map.current.getCanvas().style.cursor = 'crosshair';
-      console.log('Click event listener added for measuring, isMeasuringRef:', isMeasuringRef.current);
+      // console.log('Click event listener added for measuring, isMeasuringRef:', isMeasuringRef.current);
     } else {
       console.error('Map not available for measuring');
     }
@@ -1074,15 +1075,15 @@ export default function MapboxCatchmentDrawer(props: MapboxCatchmentDrawerProps)
 
   // Handle click for measuring
   const handleMeasureClick = async (e: any) => {
-    console.log('Measure click detected:', { 
-      isMeasuring, 
-      isMeasuringRef: isMeasuringRef.current, 
-      hasMap: !!map.current, 
-      event: e 
-    });
+    // console.log('Measure click detected:', { 
+    //   isMeasuring, 
+    //   isMeasuringRef: isMeasuringRef.current, 
+    //   hasMap: !!map.current, 
+    //   event: e 
+    // });
     
     if (!isMeasuringRef.current || !map.current) {
-      console.log('Not in measuring mode or map not available');
+      // console.log('Not in measuring mode or map not available');
       return;
     }
 
@@ -1090,28 +1091,28 @@ export default function MapboxCatchmentDrawer(props: MapboxCatchmentDrawerProps)
     // We'll handle this by checking our state instead
 
     const newPoint = [e.lngLat.lng, e.lngLat.lat];
-    console.log('New measurement point:', newPoint);
+    // console.log('New measurement point:', newPoint);
     
     const currentPoints = measurementPointsRef.current;
     const newPoints = [...currentPoints, newPoint];
     setMeasurementPoints(newPoints);
     measurementPointsRef.current = newPoints;
-    console.log('Updated measurement points:', newPoints);
-    console.log('Current measurementPoints state:', measurementPoints);
-    console.log('Current measurementPointsRef:', measurementPointsRef.current);
-    console.log('New points length:', newPoints.length);
+    // console.log('Updated measurement points:', newPoints);
+    // console.log('Current measurementPoints state:', measurementPoints);
+    // console.log('Current measurementPointsRef:', measurementPointsRef.current);
+    // console.log('New points length:', newPoints.length);
 
     // Always draw the current points
     drawMeasurementPoints(newPoints);
 
     if (newPoints.length === 2) {
-      console.log('Two points placed, calculating measurements...');
+      // console.log('Two points placed, calculating measurements...');
       // Calculate measurements
       await calculateMeasurements(newPoints);
       // Draw measurement line
       drawMeasurementLine(newPoints);
     } else if (newPoints.length > 2) {
-      console.log('More than 2 points, resetting...');
+      // console.log('More than 2 points, resetting...');
       // Reset for new measurement
       setMeasurementPoints([newPoint]);
       measurementPointsRef.current = [newPoint];
@@ -1120,7 +1121,7 @@ export default function MapboxCatchmentDrawer(props: MapboxCatchmentDrawerProps)
       // Draw the new single point
       drawMeasurementPoints([newPoint]);
     } else {
-      console.log('Only one point placed, waiting for second point...');
+      // console.log('Only one point placed, waiting for second point...');
     }
   };
 

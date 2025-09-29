@@ -9,7 +9,6 @@ import { CatchmentData } from '../types';
 import { turf } from './mapConfig';
 import { 
   getElevationData, 
-  calculateSlopeFromElevationData,
   calculatePointMeasurements 
 } from './terrainAnalysis';
 import { 

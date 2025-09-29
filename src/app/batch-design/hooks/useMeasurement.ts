@@ -8,7 +8,6 @@
 import { useState, useCallback } from 'react';
 import { MeasurementResults } from '../utils/visualizationUtils';
 import { 
-  drawMeasurementLine, 
   clearMeasurementLine,
   handleMeasurementClick 
 } from '../utils/visualizationUtils';
