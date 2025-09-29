@@ -1,7 +1,6 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info, MapPin, Calculator, Download } from "lucide-react";
 
 /**
@@ -20,18 +19,6 @@ export default function ExampleUsage() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Alert>
-          <Info className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Setup Required:</strong> You need a Mapbox access token to use the 3D map feature. 
-            Get one free at <a href="https://account.mapbox.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">mapbox.com</a>.
-            <br />
-            <strong>Quick Setup:</strong> Create a <code className="bg-gray-100 px-1 rounded">.env.local</code> file in your project root with:
-            <br />
-            <code className="bg-gray-100 px-2 py-1 rounded text-xs">NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=your_token_here</code>
-          </AlertDescription>
-        </Alert>
-
         <div className="space-y-4">
           <div className="flex items-start gap-3">
             <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">

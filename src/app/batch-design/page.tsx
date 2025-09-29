@@ -216,7 +216,7 @@ export default function BatchDesignPage() {
       {/* Batch Results Section */}
       {batchResults.length > 0 && (
         <div className="mt-8">
-          <BatchResults results={batchResults} />
+          <BatchResults results={batchResults} channels={channels} />
         </div>
       )}
     </div>

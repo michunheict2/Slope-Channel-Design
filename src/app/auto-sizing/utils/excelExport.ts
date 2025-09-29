@@ -10,7 +10,9 @@ export function exportBatchResultsToExcel(
 
   // Create main results sheet
   const resultsData = summary.results.map(result => ({
-    'Channel ID': result.channelId,
+    'Catchment ID': result.channelId,
+    'Catchment Name': (result as any).catchmentName || '',
+    'Channel Name': (result as any).channelName || '',
     'Time of Concentration (min)': result.timeOfConcentration.toFixed(1),
     'Peak Flow (m³/s)': result.peakFlow.toFixed(3),
     'Peak Flow (L/s)': (result.peakFlow * 1000).toFixed(1),
@@ -34,7 +36,9 @@ export function exportBatchResultsToExcel(
   
   // Set column widths
   resultsSheet['!cols'] = [
-    { wch: 12 }, // Channel ID
+    { wch: 12 }, // Catchment ID
+    { wch: 20 }, // Catchment Name
+    { wch: 20 }, // Channel Name
     { wch: 15 }, // Time of Concentration
     { wch: 15 }, // Peak Flow m³/s
     { wch: 15 }, // Peak Flow L/s
@@ -86,8 +90,9 @@ export function exportBatchResultsToExcel(
 
   // Create detailed calculations sheet
   const detailedData = summary.results.map(result => ({
-    'Channel ID': result.channelId,
-    // 'Channel Name': result.channelName, // Removed - not in simplified interface
+    'Catchment ID': result.channelId,
+    'Catchment Name': (result as any).catchmentName || '',
+    'Channel Name': (result as any).channelName || '',
     'Catchment Area (m²)': '', // This would need to be passed from input data
     'Average Slope (m/100m)': '',
     'Flow Path Length (m)': '',
@@ -113,7 +118,7 @@ export function exportBatchResultsToExcel(
 
   const detailedSheet = XLSX.utils.json_to_sheet(detailedData);
   detailedSheet['!cols'] = [
-    { wch: 12 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+    { wch: 12 }, { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 },
     { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 10 }, { wch: 15 },
     { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
     { wch: 15 }, { wch: 18 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
@@ -139,7 +144,9 @@ export function exportBatchResultsWithInputs(
     const input = inputData[index] || {};
     return {
       // Input data
-      'Channel ID': result.channelId,
+      'Catchment ID': result.channelId,
+      'Catchment Name': (result as any).catchmentName || '',
+      'Channel Name': (result as any).channelName || '',
       'Catchment Area (m²)': input.catchmentArea || '',
       'Average Slope (m/100m)': input.averageSlope || '',
       'Flow Path Length (m)': input.flowPathLength || '',
@@ -176,9 +183,8 @@ export function exportBatchResultsWithInputs(
   
   // Set column widths
   combinedSheet['!cols'] = [
-    { wch: 12 }, { wch: 18 }, { wch: 18 },
-    { wch: 18 }, { wch: 15 }, { wch: 20 },
-    { wch: 15 }, { wch: 10 }, { wch: 15 }, { wch: 18 }, { wch: 15 },
+    { wch: 12 }, { wch: 20 }, { wch: 20 }, { wch: 18 }, { wch: 18 },
+    { wch: 18 }, { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 10 }, { wch: 15 }, { wch: 18 }, { wch: 15 },
     { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
     { wch: 15 }, { wch: 12 }, { wch: 30 }, { wch: 15 }, { wch: 15 },
     { wch: 15 }, { wch: 18 }, { wch: 15 }

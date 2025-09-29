@@ -271,10 +271,10 @@ async function processSingleCatchment(
     let error: string | undefined;
     let velocityWarning: string | undefined;
     
-    const flowRatio = calculatedFlow / peakFlow;
-    if (flowRatio < 0.95) {
+    const utilization = peakFlow / calculatedFlow;
+    if (utilization > 1.0) {
       status = "Not OK";
-      error = `Channel capacity (${calculatedFlow.toFixed(3)} m³/s) is less than required peak flow (${peakFlow.toFixed(3)} m³/s)`;
+      error = `Channel utilization (${(utilization * 100).toFixed(1)}%) exceeds 100%. Required flow (${peakFlow.toFixed(3)} m³/s) exceeds channel capacity (${calculatedFlow.toFixed(3)} m³/s)`;
     }
     
     // Check velocity limits
@@ -283,6 +283,19 @@ async function processSingleCatchment(
       error = `Velocity too low (${velocity.toFixed(2)} m/s). Minimum recommended: 0.3 m/s`;
     } else if (velocity > 4.0) {
       velocityWarning = `Velocity higher than 4.0 m/s (${velocity.toFixed(2)} m/s)`;
+    }
+
+    // Get geometry details for Manning's equation
+    let geometry: { area: number; perimeter: number; hydraulicRadius: number };
+    if (channelProperties.channelShape === "trapezoidal") {
+      const bottomWidth = 0.5;
+      const sideSlope = 2.0;
+      const depth = (widthResult.selectedWidth - bottomWidth) / (2 * sideSlope);
+      geometry = calculateTrapezoidGeometry(depth, bottomWidth, sideSlope);
+    } else {
+      const radius = widthResult.selectedWidth / 2;
+      const flowDepth = widthResult.selectedWidth;
+      geometry = calculateUChannelGeometry(flowDepth, widthResult.selectedWidth, radius);
     }
 
     return {
@@ -308,6 +321,15 @@ async function processSingleCatchment(
       rainfallIntensity,
       runoffCoefficient,
       returnPeriod: catchment.returnPeriod,
+      
+      // Manning's equation details
+      manningN,
+      channelArea: geometry.area,
+      wettedPerimeter: geometry.perimeter,
+      hydraulicRadius: geometry.hydraulicRadius,
+      channelGradient: channelProperties.channelGradient,
+      channelShape: channelProperties.channelShape,
+      channelMaterial: channelProperties.channelMaterial,
       
       // Processing status
       processed: true,

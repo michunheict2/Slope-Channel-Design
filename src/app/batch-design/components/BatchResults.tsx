@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { BatchCalculationResult } from "../types";
+import { BatchCalculationResult, ChannelAlignment } from "../types";
 import BatchDetailedCalculations from "./BatchDetailedCalculations";
 import { 
   CheckCircle, 
@@ -17,9 +17,10 @@ import {
 
 interface BatchResultsProps {
   results: BatchCalculationResult[];
+  channels?: ChannelAlignment[];
 }
 
-export default function BatchResults({ results }: BatchResultsProps) {
+export default function BatchResults({ results, channels = [] }: BatchResultsProps) {
   const [exportFormat, setExportFormat] = useState<'csv' | 'excel'>('csv');
   const [showDetailedCalculations, setShowDetailedCalculations] = useState(false);
 
@@ -94,26 +95,34 @@ export default function BatchResults({ results }: BatchResultsProps) {
       const { exportBatchResultsToExcel } = await import("../../auto-sizing/utils/excelExport");
       
       // Convert our results to the format expected by the Excel export function
-      const excelResults = results.map(result => ({
-        channelId: result.catchmentId,
-        timeOfConcentration: result.timeOfConcentration,
-        peakFlow: result.peakFlow,
-        requiredChannelWidth: result.requiredChannelWidth,
-        selectedChannelWidth: result.selectedChannelWidth,
-        selectedChannelSize: result.selectedChannelSize,
-        calculatedFlow: result.calculatedFlow,
-        velocity: result.velocity,
-        status: result.status,
-        error: result.error,
-        velocityWarning: result.velocityWarning,
-        catchmentTC: result.catchmentTC,
-        upstreamTC: result.upstreamTC,
-        effectiveTC: result.effectiveTC,
-        rainfallIntensity: result.rainfallIntensity,
-        runoffCoefficient: result.runoffCoefficient,
-        processed: result.processed,
-        processingError: result.processingError
-      }));
+      const excelResults = results.map(result => {
+        // Find the linked channel to get the actual channel name
+        const linkedChannel = channels.find(channel => channel.linkedCatchmentId === result.catchmentId);
+        const channelName = linkedChannel ? linkedChannel.name : (result.channelShape ? `${result.channelShape} channel` : 'Channel');
+        
+        return {
+          channelId: result.catchmentId,
+          catchmentName: result.catchmentName,
+          channelName: channelName,
+          timeOfConcentration: result.timeOfConcentration,
+          peakFlow: result.peakFlow,
+          requiredChannelWidth: result.requiredChannelWidth,
+          selectedChannelWidth: result.selectedChannelWidth,
+          selectedChannelSize: result.selectedChannelSize,
+          calculatedFlow: result.calculatedFlow,
+          velocity: result.velocity,
+          status: result.status,
+          error: result.error,
+          velocityWarning: result.velocityWarning,
+          catchmentTC: result.catchmentTC,
+          upstreamTC: result.upstreamTC,
+          effectiveTC: result.effectiveTC,
+          rainfallIntensity: result.rainfallIntensity,
+          runoffCoefficient: result.runoffCoefficient,
+          processed: result.processed,
+          processingError: result.processingError
+        };
+      });
 
       const summary = {
         totalChannels: results.length,
@@ -344,7 +353,7 @@ export default function BatchResults({ results }: BatchResultsProps) {
       {/* Detailed Calculations */}
       {showDetailedCalculations && (
         <div className="mt-6">
-          <BatchDetailedCalculations results={results} />
+          <BatchDetailedCalculations results={results} channels={channels} />
         </div>
       )}
     </div>

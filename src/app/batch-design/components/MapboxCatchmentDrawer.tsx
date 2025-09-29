@@ -44,7 +44,9 @@ export default function MapboxCatchmentDrawer(props: MapboxCatchmentDrawerProps)
   const [isExtractingSlope, setIsExtractingSlope] = useState(false);
   const [showToolsPopup, setShowToolsPopup] = useState(false);
   const [isMeasuring, setIsMeasuring] = useState(false);
+  const isMeasuringRef = useRef(false);
   const [measurementPoints, setMeasurementPoints] = useState<number[][]>([]);
+  const measurementPointsRef = useRef<number[][]>([]);
   const [measurementResults, setMeasurementResults] = useState<{
     horizontalDistance: number;
     elevationDiff: number;
@@ -1023,50 +1025,102 @@ export default function MapboxCatchmentDrawer(props: MapboxCatchmentDrawerProps)
 
   // Start line measuring mode
   const startLineMeasuring = () => {
+    console.log('Starting line measuring mode...');
     setIsMeasuring(true);
+    isMeasuringRef.current = true;
     setMeasurementPoints([]);
+    measurementPointsRef.current = [];
     setMeasurementResults(null);
     setCurrentMode('measure_line');
     
+    // Disable MapboxDraw to prevent conflicts
+    if (draw.current) {
+      draw.current.changeMode('simple_select');
+    }
+    
     // Add click event listener for measuring
     if (map.current) {
+      // Remove any existing click listeners first
+      map.current.off('click', handleMeasureClick);
       map.current.on('click', handleMeasureClick);
       map.current.getCanvas().style.cursor = 'crosshair';
+      console.log('Click event listener added for measuring, isMeasuringRef:', isMeasuringRef.current);
+    } else {
+      console.error('Map not available for measuring');
     }
   };
 
   // Stop line measuring mode
   const stopLineMeasuring = () => {
+    console.log('Stopping line measuring mode...');
     setIsMeasuring(false);
+    isMeasuringRef.current = false;
     setCurrentMode('simple_select');
     
     if (map.current) {
       map.current.off('click', handleMeasureClick);
       map.current.getCanvas().style.cursor = '';
+      console.log('Click event listener removed and cursor reset');
     }
     
     // Clear measurement line
     clearMeasurementLine();
+    
+    // Reset state
+    setMeasurementPoints([]);
+    measurementPointsRef.current = [];
+    setMeasurementResults(null);
   };
 
   // Handle click for measuring
   const handleMeasureClick = async (e: any) => {
-    if (!isMeasuring || !map.current) return;
+    console.log('Measure click detected:', { 
+      isMeasuring, 
+      isMeasuringRef: isMeasuringRef.current, 
+      hasMap: !!map.current, 
+      event: e 
+    });
+    
+    if (!isMeasuringRef.current || !map.current) {
+      console.log('Not in measuring mode or map not available');
+      return;
+    }
+
+    // Mapbox events don't have preventDefault/stopPropagation
+    // We'll handle this by checking our state instead
 
     const newPoint = [e.lngLat.lng, e.lngLat.lat];
-    const newPoints = [...measurementPoints, newPoint];
+    console.log('New measurement point:', newPoint);
+    
+    const currentPoints = measurementPointsRef.current;
+    const newPoints = [...currentPoints, newPoint];
     setMeasurementPoints(newPoints);
+    measurementPointsRef.current = newPoints;
+    console.log('Updated measurement points:', newPoints);
+    console.log('Current measurementPoints state:', measurementPoints);
+    console.log('Current measurementPointsRef:', measurementPointsRef.current);
+    console.log('New points length:', newPoints.length);
+
+    // Always draw the current points
+    drawMeasurementPoints(newPoints);
 
     if (newPoints.length === 2) {
+      console.log('Two points placed, calculating measurements...');
       // Calculate measurements
       await calculateMeasurements(newPoints);
       // Draw measurement line
       drawMeasurementLine(newPoints);
     } else if (newPoints.length > 2) {
+      console.log('More than 2 points, resetting...');
       // Reset for new measurement
       setMeasurementPoints([newPoint]);
+      measurementPointsRef.current = [newPoint];
       setMeasurementResults(null);
       clearMeasurementLine();
+      // Draw the new single point
+      drawMeasurementPoints([newPoint]);
+    } else {
+      console.log('Only one point placed, waiting for second point...');
     }
   };
 
@@ -1113,9 +1167,101 @@ export default function MapboxCatchmentDrawer(props: MapboxCatchmentDrawerProps)
     }
   };
 
+  // Draw measurement points
+  const drawMeasurementPoints = (points: number[][]) => {
+    console.log('Drawing measurement points:', points);
+    
+    if (!map.current) {
+      console.log('Cannot draw points - map not available');
+      return;
+    }
+
+    try {
+      const pointFeatures = points.map((point, index) => ({
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: point
+        },
+        properties: {
+          type: 'measurement-point',
+          pointNumber: index + 1
+        }
+      }));
+
+      console.log('Point features created:', pointFeatures);
+
+      // Add source if it doesn't exist
+      if (!map.current.getSource('measurement-points')) {
+        console.log('Adding measurement-points source');
+        map.current.addSource('measurement-points', {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: []
+          }
+        });
+      }
+
+      // Add layer if it doesn't exist
+      if (!map.current.getLayer('measurement-points')) {
+        console.log('Adding measurement-points layer');
+        map.current.addLayer({
+          id: 'measurement-points',
+          type: 'circle',
+          source: 'measurement-points',
+          paint: {
+            'circle-color': '#ff0000',
+            'circle-radius': 8,
+            'circle-stroke-color': '#ffffff',
+            'circle-stroke-width': 2
+          }
+        });
+      }
+
+      // Add labels layer if it doesn't exist
+      if (!map.current.getLayer('measurement-points-labels')) {
+        console.log('Adding measurement-points-labels layer');
+        map.current.addLayer({
+          id: 'measurement-points-labels',
+          type: 'symbol',
+          source: 'measurement-points',
+          layout: {
+            'text-field': ['get', 'pointNumber'],
+            'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+            'text-size': 14,
+            'text-offset': [0, 2]
+          },
+          paint: {
+            'text-color': '#ffffff',
+            'text-halo-color': '#000000',
+            'text-halo-width': 1
+          }
+        });
+      }
+
+      // Update source
+      console.log('Updating measurement-points source with data');
+      map.current.getSource('measurement-points').setData({
+        type: 'FeatureCollection',
+        features: pointFeatures
+      });
+
+      console.log('Measurement points drawn successfully');
+
+    } catch (error) {
+      console.error('Error drawing measurement points:', error);
+    }
+  };
+
   // Draw measurement line
   const drawMeasurementLine = (points: number[][]) => {
-    if (!map.current || points.length !== 2) return;
+    console.log('Drawing measurement line with points:', points);
+    
+    if (!map.current || points.length !== 2) {
+      console.log('Cannot draw line - map not available or insufficient points');
+      return;
+    }
 
     try {
       const lineFeature = {
@@ -1129,8 +1275,11 @@ export default function MapboxCatchmentDrawer(props: MapboxCatchmentDrawerProps)
         }
       };
 
+      console.log('Line feature created:', lineFeature);
+
       // Add source if it doesn't exist
       if (!map.current.getSource('measurement-line')) {
+        console.log('Adding measurement-line source');
         map.current.addSource('measurement-line', {
           type: 'geojson',
           data: {
@@ -1142,6 +1291,7 @@ export default function MapboxCatchmentDrawer(props: MapboxCatchmentDrawerProps)
 
       // Add layer if it doesn't exist
       if (!map.current.getLayer('measurement-line')) {
+        console.log('Adding measurement-line layer');
         map.current.addLayer({
           id: 'measurement-line',
           type: 'line',
@@ -1155,29 +1305,44 @@ export default function MapboxCatchmentDrawer(props: MapboxCatchmentDrawerProps)
       }
 
       // Update source
+      console.log('Updating measurement-line source with data');
       map.current.getSource('measurement-line').setData({
         type: 'FeatureCollection',
         features: [lineFeature]
       });
+
+      console.log('Measurement line drawn successfully');
 
     } catch (error) {
       console.error('Error drawing measurement line:', error);
     }
   };
 
-  // Clear measurement line
+  // Clear measurement line and points
   const clearMeasurementLine = () => {
     if (!map.current) return;
 
     try {
+      // Clear measurement line
       if (map.current.getLayer('measurement-line')) {
         map.current.removeLayer('measurement-line');
       }
       if (map.current.getSource('measurement-line')) {
         map.current.removeSource('measurement-line');
       }
+      
+      // Clear measurement points
+      if (map.current.getLayer('measurement-points-labels')) {
+        map.current.removeLayer('measurement-points-labels');
+      }
+      if (map.current.getLayer('measurement-points')) {
+        map.current.removeLayer('measurement-points');
+      }
+      if (map.current.getSource('measurement-points')) {
+        map.current.removeSource('measurement-points');
+      }
     } catch (error) {
-      console.error('Error clearing measurement line:', error);
+      console.error('Error clearing measurement line and points:', error);
     }
   };
 
@@ -1385,30 +1550,6 @@ export default function MapboxCatchmentDrawer(props: MapboxCatchmentDrawerProps)
             </div>
           </div>
           
-          {/* Measurement Results */}
-          {measurementResults && (
-            <div className="mb-4 pt-3 border-t border-gray-200">
-              <h4 className="font-medium text-xs text-gray-600 mb-2">Measurement Results</h4>
-              <div className="text-xs space-y-1">
-                <div className="flex justify-between">
-                  <span>Distance:</span>
-                  <span className="font-medium">{measurementResults.horizontalDistance.toFixed(2)}m</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Elevation Diff:</span>
-                  <span className="font-medium">{measurementResults.elevationDiff.toFixed(2)}m</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Gradient:</span>
-                  <span className="font-medium">{measurementResults.gradient.toFixed(2)}%</span>
-                </div>
-                <div className="text-xs text-gray-500 mt-2">
-                  <div>Point 1: {measurementResults.elevation1.toFixed(2)}m</div>
-                  <div>Point 2: {measurementResults.elevation2.toFixed(2)}m</div>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Statistics */}
           <div className="pt-3 border-t border-gray-200">
@@ -1422,6 +1563,57 @@ export default function MapboxCatchmentDrawer(props: MapboxCatchmentDrawerProps)
                   <span>Extracting slope...</span>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Measurement Results - Bottom of Map */}
+      {isMeasuring && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white border border-gray-300 rounded-lg shadow-lg p-3 min-w-[300px]">
+          <div className="text-center">
+            <h4 className="font-semibold text-sm text-gray-800 mb-2">📏 Line Measurement</h4>
+            
+            {measurementResults ? (
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="text-center">
+                  <div className="font-medium text-gray-600">Distance</div>
+                  <div className="text-lg font-bold text-blue-600">{measurementResults.horizontalDistance.toFixed(2)}m</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-medium text-gray-600">Gradient</div>
+                  <div className="text-lg font-bold text-green-600">{measurementResults.gradient.toFixed(2)}%</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-medium text-gray-600">Elevation Diff</div>
+                  <div className="text-lg font-bold text-orange-600">{measurementResults.elevationDiff.toFixed(2)}m</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-medium text-gray-600">Points</div>
+                  <div className="text-sm text-gray-500">
+                    {measurementResults.elevation1.toFixed(1)}m → {measurementResults.elevation2.toFixed(1)}m
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center">
+                <div className="text-sm text-gray-600 mb-2">
+                  {measurementPoints.length === 0 
+                    ? "Click on the map to place the first point" 
+                    : "Click on the map to place the second point"
+                  }
+                </div>
+                <div className="text-xs text-gray-500">
+                  Points placed: {measurementPoints.length}/2
+                </div>
+              </div>
+            )}
+            
+            <div className="mt-2 text-xs text-gray-500">
+              {measurementResults 
+                ? "Click on the map to measure a new line" 
+                : "Click 'Stop Measuring' to exit measurement mode"
+              }
             </div>
           </div>
         </div>
