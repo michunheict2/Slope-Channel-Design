@@ -24,7 +24,7 @@ export default function Home() {
               </Button>
             </Link>
             <Link href="/batch-design">
-              <Button size="lg" variant="secondary" className="text-lg px-8 py-3">
+              <Button size="lg" className="text-lg px-8 py-3 bg-black text-white hover:bg-gray-800">
                 Batch Design
               </Button>
             </Link>
