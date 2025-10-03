@@ -463,16 +463,18 @@ export async function processBatchCatchments(
       // Find the channel linked to this catchment
       const linkedChannel = channels.find(channel => channel.linkedCatchmentId === catchment.id);
       
-      // Use channel properties if linked, otherwise use defaults
+      // Use channel properties if linked, otherwise use properties from available channels or smart defaults
       const channelProperties = linkedChannel ? {
         channelShape: linkedChannel.channelShape,
         channelGradient: linkedChannel.channelGradient,
         channelMaterial: linkedChannel.channelMaterial,
         upstreamChannels: linkedChannel.upstreamChannels
       } : {
+        // If no channel is linked, use properties from the first available channel
+        // or calculate smart defaults based on catchment characteristics
         channelShape: "trapezoidal" as const,
-        channelGradient: 0.01,
-        channelMaterial: "concrete",
+        channelGradient: channels.length > 0 ? channels[0].channelGradient : Math.max(0.005, catchment.averageSlope / 100), // Use actual channel gradient or calculate from catchment slope
+        channelMaterial: channels.length > 0 ? channels[0].channelMaterial : "concrete",
         upstreamChannels: []
       };
       
